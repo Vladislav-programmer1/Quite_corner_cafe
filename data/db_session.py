@@ -16,7 +16,7 @@ def global_init(db_path: str = 'db/database.sqlite') -> None:
     global __factory
     if __factory:
         return
-    engine = sa.create_engine(f"sqlite:///{db_path.strip()}&check_same_thread=False")
+    engine = sa.create_engine(f"sqlite:///{db_path.strip()}?check_same_thread=False")
     __factory = orm.sessionmaker(bind=engine)
     from . import __all_models
     if __all_models:

@@ -38,23 +38,25 @@ def not_found(error):
     css_path = url_for('static', filename='css/errors.css')
     # TODO: make a template for this error
     logging.critical(error)
-    return make_response(render_template('errors/not_found.html', error=error, img_path=img_path, css_file=css_path),
+    return make_response(render_template('errors/not_found.html',
+                                         error=error, img_path=img_path, css_file=css_path,
+                                         title='Not Found'),
                          404)
 
 
 @app.errorhandler(400)
 def bad_request():
-    return make_response(render_template('errors/bad_request.html'), 400)
+    return make_response(render_template('errors/bad_request.html', title='Bad request'), 400)
 
 
 @app.route('/login', methods=['POST', 'GET'])
 def authorize():
-    pass
+    return ''
 
 
 @app.route('/signup', methods=['POST', 'GET'])
 def registrate():
-    pass
+    return ''
 
 
 @login_required
@@ -64,11 +66,11 @@ def account():
 
 
 def check_agent(agent) -> str:
-    if 'Apple' in agent.string or 'Android' in agent.string:
-        type_ = 'mobile'
-    else:
-        type_ = 'desktop'
-    return type_
+    # if 'Apple' in agent.string or 'Android' in agent.string:
+    #     type_ = 'mobile'
+    # else:
+    #     type_ = 'desktop'
+    return 'desktop' if agent else 'mobile'
 
 
 @app.route('/', methods=['GET'])

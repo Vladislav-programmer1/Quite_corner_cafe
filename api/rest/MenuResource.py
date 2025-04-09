@@ -1,5 +1,8 @@
+from flask import jsonify
 from flask_restful import Resource
 
 
 class Menu(Resource):
-    pass
+    @staticmethod
+    def get():
+        return jsonify({'check': 'success'})

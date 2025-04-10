@@ -2,14 +2,16 @@ import logging
 from datetime import timedelta
 from os import getenv
 
-from flask import Flask, render_template, url_for, make_response, request
-from flask_login import LoginManager
+from dotenv import load_dotenv
+from flask import Flask, render_template, url_for, make_response, request, redirect
+from flask_login import LoginManager, logout_user
 from flask_login import login_required
 from flask_restful import Api
 
 from api import ListUsers, Menu
 from config import set_security_parameters
 from data import global_init, db_session, User
+from forms import LoginForm
 
 app = Flask(__name__)
 
@@ -19,6 +21,7 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 # set security
+load_dotenv()
 
 set_security_parameters(app,
                         SECRET_KEY=getenv("SECRET_KEY"),
@@ -30,7 +33,7 @@ set_security_parameters(app,
 
 logging.basicConfig(filename='logs.log',
                     format='%(asctime)s %(levelname)s %(name)s %(message)s',
-                    level=logging.WARNING)
+                    level=logging.WARNING, filemode='w')
 
 # Adding resources to an api
 
@@ -71,7 +74,10 @@ def load_user(user_id):
 
 @app.route('/login', methods=['POST', 'GET'])
 def authorize():
-    return render_template('desktop/base.html', title='Авторизация')
+    form = LoginForm()
+    if form.validate_on_submit():
+        return redirect('/')
+    return render_template('desktop/login.html', title='Авторизация', form=form)
 
 
 @app.route('/signup', methods=['POST', 'GET'])
@@ -91,6 +97,11 @@ def check_agent(agent) -> str:
     # else:
     #     type_ = 'desktop'
     return 'desktop' if agent else 'mobile'
+
+
+@app.route('/logout')
+def logout():
+    logout_user()
 
 
 @app.route('/', methods=['GET'])

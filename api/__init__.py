@@ -1,2 +1,2 @@
-from api.rest.MenuResource import Menu
-from api.rest.UserResource import *
+from api.rest import *
+from api.rest import MenuList

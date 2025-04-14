@@ -8,19 +8,16 @@ from flask_login import LoginManager, logout_user
 from flask_login import login_required
 from flask_restful import Api
 
-from api import ListUsers, Menu
+from api import ListUsers, MenuList, MenuItem, UserItem
 from config import set_security_parameters
 from data import global_init, db_session, User
 from forms import LoginForm
 
 app = Flask(__name__)
 
-# set and init login manager
-
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-# set security
 load_dotenv()
 
 set_security_parameters(app,
@@ -29,17 +26,15 @@ set_security_parameters(app,
                         REMEMBER_COOKIE_DURATION=timedelta(days=180)
                         )
 
-# set logging settings
-
 logging.basicConfig(filename='logs.log',
                     format='%(asctime)s %(levelname)s %(name)s %(message)s',
                     level=logging.WARNING, filemode='w')
 
-# Adding resources to an api
-
 api = Api(app)
 api.add_resource(ListUsers, '/api/v2/users')
-api.add_resource(Menu, '/api/v2/menu')
+api.add_resource(MenuList, '/api/v2/menu')
+api.add_resource(MenuItem, '/api/v2/menu/<int:item_id>')
+api.add_resource(UserItem, '/api/v2/users/<int:user_id>')
 
 
 # TODO: make a templates for the pages
@@ -62,7 +57,14 @@ def bad_request(error):
 
 @app.errorhandler(401)
 def unauthorized(error):
-    return make_response(render_template('errors/unauthorized.html', title='Unauthorized', error=error), 401)
+    if error:
+        pass
+    return redirect('/')
+
+
+@app.errorhandler(500)
+def server_error(error):
+    return make_response(render_template('errors/server_error.html', title='Server error', error=error), 500)
 
 
 # user loader
@@ -106,8 +108,8 @@ def logout():
 
 @app.route('/', methods=['GET'])
 def index():
-    css_file = url_for('static', filename='css/style.css')
     type_ = check_agent(request.user_agent)
+    css_file = url_for('static', filename='css/style.css')
     return render_template(f"{type_}/base.html", title='Home', css_file=css_file)
 
 

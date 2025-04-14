@@ -8,7 +8,7 @@ from data import SqlAlchemyBase
 
 
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
-    __tablename__ = 'users'
+    __tablename__ = 'Users'
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     name = sa.Column(sa.String)
     surname = sa.Column(sa.String)

@@ -7,6 +7,7 @@ from flask import Flask, render_template, url_for, make_response, request, redir
 from flask_login import LoginManager, logout_user
 from flask_login import login_required
 from flask_restful import Api
+from requests import post
 
 from api import ListUsers, MenuList, MenuItem, UserItem
 from config import set_security_parameters
@@ -99,6 +100,17 @@ def check_agent(agent) -> str:
     # else:
     #     type_ = 'desktop'
     return 'desktop' if agent else 'mobile'
+
+
+@app.route('/check')
+def check_user_api():
+    response = post('http://localhost:5000/api/v2/users', json={
+        'name': 'Lando',
+        'surname': 'Norris',
+        'email': 'd.chernushin@gmail.com',
+        'hashed_password': 'password'
+    })
+    return response.json()
 
 
 @app.route('/logout')

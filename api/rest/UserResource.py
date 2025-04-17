@@ -1,8 +1,9 @@
+import sqlalchemy
 from flask import jsonify
 from flask_restful import Resource, abort
 
+from api.rest.parsers.user_parser import parser
 from data import create_session, User
-from .parser import parser
 
 
 class ListUsers(Resource):
@@ -10,7 +11,9 @@ class ListUsers(Resource):
     def get():
         with create_session() as session:
             users: list = session.query(User).all()
-        return jsonify({'users': [user.to_dict() for user in users]})
+        return jsonify(
+            {'users': [user.to_dict(only=('id', 'name', 'surname', 'email', 'level_of_loyalty', 'creation_datetime'))
+                       for user in users]})
 
     @staticmethod
     def post():
@@ -21,10 +24,15 @@ class ListUsers(Resource):
         user.surname = args['surname']
         user.hashed_password = args['hashed_password']
         user.email = args['email']
+
         user.level_of_loyalty = args['level_of_loyalty']
         with create_session() as session:
-            session.add(user)
-            session.commit()
+            try:
+                session.add(user)
+                session.commit()
+            except sqlalchemy.exc.IntegrityError:
+                del user
+                return jsonify({'error': 'This already is already set for other user. Email must be unique.'})
         # TODO: fix this code. Check email (correct and unique)
         return jsonify({'status': 'ok'})
 
@@ -34,8 +42,8 @@ class UserItem(Resource):
     def get(user_id: int):
         abort_if_not_found(user_id, User)
         with create_session() as session:
-            user = session.query(User).get(user_id)
-        return user.to_dict()
+            user: User = session.query(User).get(user_id)
+        return user.to_dict(only=('id', 'name', 'surname', 'email', 'level_of_loyalty', 'creation_datetime'))
 
     @staticmethod
     def delete(user_id: int):
@@ -48,6 +56,7 @@ class UserItem(Resource):
 
     @staticmethod
     def put(user_id: int):
+        abort_if_not_found(user_id, User)
         pass
 
 

@@ -4,7 +4,7 @@ from flask_restful import Resource
 from data import Menu
 from data import create_session
 from .UserResource import abort_if_not_found
-from .parser import menu_parser
+from api.rest.parsers import menu_parser
 
 
 class MenuList(Resource):

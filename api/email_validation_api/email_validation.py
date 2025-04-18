@@ -19,7 +19,7 @@ def validate_email(email: str) -> bool:
             'api_key': getenv('email_validate_api_key'),
             'email': email
         }
-        response = session.get(server, **params)
+        response = session.get(server, params=params)
         if response.status_code != 200:
             return False
     content = response.json()

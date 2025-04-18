@@ -107,7 +107,7 @@ def check_user_api():
     response = post('http://localhost:5000/api/v2/users', json={
         'name': 'Lando',
         'surname': 'Norris',
-        'email': 'd.chernushin@gmail.com',
+        'email': 'ageeva_oxana@mail.ru',
         'hashed_password': 'password'
     })
     return response.json()

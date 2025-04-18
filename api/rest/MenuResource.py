@@ -1,10 +1,10 @@
 from flask import jsonify
 from flask_restful import Resource
 
+from api.rest.parsers import menu_parser
 from data import Menu
 from data import create_session
 from .UserResource import abort_if_not_found
-from api.rest.parsers import menu_parser
 
 
 class MenuList(Resource):

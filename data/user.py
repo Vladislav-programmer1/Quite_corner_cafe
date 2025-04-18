@@ -18,6 +18,6 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     order = sa.Column(sa.Integer, sa.ForeignKey('orders.id'), nullable=True)
     creation_datetime = sa.Column(sa.DateTime, default=dt.now)
     modified_datetime = sa.Column(sa.DateTime, default=dt.now, nullable=True)
-    orders = relationship('Order')
     user_level = sa.Column(sa.Integer, default=1)
+    orders = relationship('Order')
 

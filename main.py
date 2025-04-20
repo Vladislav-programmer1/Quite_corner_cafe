@@ -1,17 +1,17 @@
 import logging
 from datetime import timedelta
 from os import getenv
+from typing import Any
 
 from dotenv import load_dotenv
 from flask import Flask, render_template, url_for, make_response, request, redirect
-from flask_login import LoginManager, logout_user
-from flask_login import login_required
+from flask_login import LoginManager, logout_user, login_required
 from flask_restful import Api
 from requests import post
 
 from api import ListUsers, MenuList, MenuItem, UserItem
 from config import set_security_parameters
-from data import global_init, db_session, User
+from data import global_init, create_session, User
 from forms import LoginForm
 
 app = Flask(__name__)
@@ -71,8 +71,8 @@ def server_error(error):
 # user loader
 @login_manager.user_loader
 def load_user(user_id):
-    db_sess = db_session.create_session()
-    return db_sess.get(User, user_id)
+    with create_session() as db_sess:
+        return db_sess.get(User, user_id)
 
 
 @app.route('/login', methods=['POST', 'GET'])
@@ -80,12 +80,14 @@ def authorize():
     form = LoginForm()
     if form.validate_on_submit():
         return redirect('/')
-    return render_template('desktop/login.html', title='Авторизация', form=form)
+    css_file = url_for('static', filename='css/style.css')
+    return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file)
 
 
 @app.route('/signup', methods=['POST', 'GET'])
 def registrate():
-    return render_template('desktop/base.html', title='Регистрация')
+    css_file = url_for('static', filename='css/style.css')
+    return render_template('desktop/base.html', title='Регистрация', css_file=css_file)
 
 
 @app.route('/account', methods=['GET'])
@@ -116,13 +118,29 @@ def check_user_api():
 @app.route('/logout')
 def logout():
     logout_user()
+    return redirect('/')
 
 
 @app.route('/', methods=['GET'])
 def index():
-    type_ = check_agent(request.user_agent)
+    # type_ = check_agent(request.user_agent)
     css_file = url_for('static', filename='css/style.css')
-    return render_template(f"{type_}/base.html", title='Home', css_file=css_file)
+    js_file = url_for('static', filename='js/index.js')
+    api_key = getenv('JAVASCRIPT_API_KEY')
+    return render_template(f"desktop/base.html", title='Home', css_file=css_file, js_file=js_file, API_KEY=api_key)
+
+
+@app.route('/stuff/login', methods=['POST', 'GET'])
+def admin_login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        with create_session() as session:
+            expression: Any = (User.email == form.email.data, User.user_level > 1)
+            user: User | None = session.query(User).filter(expression).first()
+            if user and user.check_password(form.password.data):
+                return redirect('/account')
+            return render_template('stuff/login.html', message='Неверный логин или пароль')
+    return render_template('stuff/login.html')
 
 
 if __name__ == '__main__':

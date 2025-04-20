@@ -2,8 +2,10 @@ from datetime import datetime as dt
 
 import sqlalchemy as sa
 from flask_login import UserMixin
-from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm import relationship
+from sqlalchemy_serializer import SerializerMixin
+from werkzeug.security import check_password_hash, generate_password_hash
+
 from data import SqlAlchemyBase
 
 
@@ -21,3 +23,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     user_level = sa.Column(sa.Integer, default=1)
     orders = relationship('Order')
 
+    def check_password(self, password: str) -> bool:
+        return check_password_hash(self.hashed_password, password)
+
+    def set_password(self, password: str) -> None:
+        self.hashed_password = generate_password_hash(password)

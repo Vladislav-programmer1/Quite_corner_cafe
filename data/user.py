@@ -14,6 +14,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     name = sa.Column(sa.String)
     surname = sa.Column(sa.String)
+    sex = sa.Column(sa.String)
+    phone_number = sa.Column(sa.String)
     email = sa.Column(sa.String, unique=True)
     level_of_loyalty = sa.Column(sa.Integer, default=0)
     hashed_password = sa.Column(sa.String)

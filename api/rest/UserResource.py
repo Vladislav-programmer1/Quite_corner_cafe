@@ -24,7 +24,7 @@ class ListUsers(Resource):
         user.id = args['id']
         user.name = args['name']
         user.surname = args['surname']
-        user.hashed_password = args['hashed_password']
+        user.set_password(args['hashed_password'])
         if validate_email(args['email']):
             user.email = args['email']
         else:

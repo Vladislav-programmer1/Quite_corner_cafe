@@ -4,15 +4,15 @@ from os import getenv
 from typing import Any
 
 from dotenv import load_dotenv
-from flask import Flask, render_template, url_for, make_response, request, redirect
-from flask_login import LoginManager, logout_user, login_required
+from flask import Flask, render_template, url_for, make_response, redirect
+from flask_login import LoginManager, logout_user, login_required, login_user
 from flask_restful import Api
 from requests import post
 
 from api import ListUsers, MenuList, MenuItem, UserItem
 from config import set_security_parameters
 from data import global_init, create_session, User
-from forms import LoginForm
+from forms import LoginForm, SignupForm
 
 app = Flask(__name__)
 
@@ -30,6 +30,7 @@ set_security_parameters(app,
 logging.basicConfig(filename='logs.log',
                     format='%(asctime)s %(levelname)s %(name)s %(message)s',
                     level=logging.WARNING, filemode='w')
+logger = logging.getLogger(__name__)
 
 api = Api(app)
 api.add_resource(ListUsers, '/api/v2/users')
@@ -44,7 +45,7 @@ api.add_resource(UserItem, '/api/v2/users/<int:user_id>')
 def not_found(error):
     img_path = url_for('static', filename='img/errors/404_error.png')
     css_path = url_for('static', filename='css/errors.css')
-    logging.critical(error)
+    logger.critical(error)
     return make_response(render_template('errors/not_found.html',
                                          error=error, img_path=img_path, css_file=css_path,
                                          title='Not Found'),
@@ -78,8 +79,19 @@ def load_user(user_id):
 @app.route('/login', methods=['POST', 'GET'])
 def authorize():
     form = LoginForm()
+    css_file = url_for('static', filename='css/style.css')
     if form.validate_on_submit():
-        return redirect('/')
+        email = form.email.data
+        password = form.password.data
+        check = form.remember_me.data
+        with create_session() as session:
+            boolean: Any = User.email == email
+            user: User | None = session.query(User).filter(boolean).first()
+            if not user or not user.check_password(password):
+                return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file,
+                                       message='Неверный логин или пароль')
+            login_user(user, remember=check)
+            return redirect('/account')
     css_file = url_for('static', filename='css/style.css')
     return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file)
 
@@ -87,13 +99,40 @@ def authorize():
 @app.route('/signup', methods=['POST', 'GET'])
 def registrate():
     css_file = url_for('static', filename='css/style.css')
-    return render_template('desktop/base.html', title='Регистрация', css_file=css_file)
+    form = SignupForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+        name = form.name.data
+        surname = form.surname.data
+        sex = form.sex.data
+        phone_number = form.phone_number.data
+        with create_session() as session:
+            boolean: Any = (User.email == email)
+            user: User | None = session.query(User).filter(boolean).first()
+            if user:
+                return render_template('desktop/signup.html', title='Регистрация', css_file=css_file,
+                                       message="Пользователь с таким email уже существует", form=form)
+
+            new_user = User()
+            new_user.email = email
+            new_user.name = name
+            new_user.surname = surname
+            new_user.sex = sex
+            new_user.phone_number = phone_number
+            new_user.set_password(password)
+            session.add(new_user)
+            session.commit()
+            login_user(new_user)
+            return redirect('/account')
+    return render_template('desktop/signup.html', title='Регистрация', css_file=css_file, form=form)
 
 
 @app.route('/account', methods=['GET'])
 @login_required
 def account():
-    return render_template(f'{check_agent(request.user_agent)}/account.html', title='Личный кабинет')
+    css_file = url_for('static', filename='css/style.css')
+    return render_template('desktop/account.html', title='Личный кабинет', css_file=css_file)
 
 
 def check_agent(agent) -> str:
@@ -109,7 +148,7 @@ def check_user_api():
     response = post('http://localhost:5000/api/v2/users', json={
         'name': 'Lando',
         'surname': 'Norris',
-        'email': 'ageeva_oxana@mail.ru',
+        'email': 'o.chernushina5123@mail',
         'hashed_password': 'password'
     })
     return response.json()

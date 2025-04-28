@@ -1,1 +1,17 @@
 {% extends "errors/BaseError.html" %}
+
+{% extends "errors/BaseError.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center flex-column">
+    <h1>
+        Упс, похоже вы не авторизованы
+    </h1>
+    <img src="{{ url_for('static', filename='img/errors/401_error.png') }}">
+    <h2>
+        Теплый ужин уже ждет вас, но для начала нам надо понять, что это именно вы
+    </h2>
+</div>
+
+{% endblock %}

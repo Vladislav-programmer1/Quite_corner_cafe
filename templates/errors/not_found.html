@@ -1,1 +1,15 @@
 {% extends "errors/BaseError.html" %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center flex-column">
+    <h1>
+        Не найдено
+    </h1>
+    <img src="{{ url_for('static', filename='img/errors/404_error.png') }}">
+    <h2>
+        Сожалеем, но страниц с такими десертами ещё не придумали
+    </h2>
+</div>
+
+{% endblock %}

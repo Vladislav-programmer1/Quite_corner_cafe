@@ -10,7 +10,7 @@ class Menu(SqlAlchemyBase, SerializerMixin):
     dish_name = sa.Column(sa.String)
     description = sa.Column(sa.String, nullable=True)
     img_src = sa.Column(sa.String)
-    price = sa.Column(sa.Double)
+    price = sa.Column(sa.Float)
     is_available = sa.Column(sa.Boolean, default=True)
 
 

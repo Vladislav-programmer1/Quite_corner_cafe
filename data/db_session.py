@@ -2,8 +2,10 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 from sqlalchemy.orm import Session
 
-__factory: orm.sessionmaker | None = None
-SqlAlchemyBase: orm.DeclarativeBase = orm.declarative_base()
+# __factory: orm.sessionmaker | None = None
+__factory = None
+# SqlAlchemyBase: orm.DeclarativeBase = orm.declarative_base()
+SqlAlchemyBase = orm.declarative_base()
 
 
 def global_init(db_path: str = 'db/database.sqlite') -> None:

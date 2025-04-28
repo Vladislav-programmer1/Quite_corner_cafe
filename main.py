@@ -86,7 +86,7 @@ def authorize():
         check = form.remember_me.data
         with create_session() as session:
             boolean: Any = User.email == email
-            user: User | None = session.query(User).filter(boolean).first()
+            # user: User | None = session.query(User).filter(boolean).first()
             if not user or not user.check_password(password):
                 return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file,
                                        message='Неверный логин или пароль')
@@ -109,7 +109,7 @@ def registrate():
         phone_number = form.phone_number.data
         with create_session() as session:
             boolean: Any = (User.email == email)
-            user: User | None = session.query(User).filter(boolean).first()
+            # user: User | None = session.query(User).filter(boolean).first()
             if user:
                 return render_template('desktop/signup.html', title='Регистрация', css_file=css_file,
                                        message="Пользователь с таким email уже существует", form=form)
@@ -175,7 +175,7 @@ def admin_login():
     if form.validate_on_submit():
         with create_session() as session:
             expression: Any = (User.email == form.email.data, User.user_level > 1)
-            user: User | None = session.query(User).filter(expression).first()
+            # user: User | None = session.query(User).filter(expression).first()
             if user and user.check_password(form.password.data):
                 return redirect('/account')
             return render_template('stuff/login.html', message='Неверный логин или пароль')

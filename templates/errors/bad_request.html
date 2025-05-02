@@ -2,13 +2,14 @@
 
 {% block content %}
 
+<link rel="stylesheet" href=" {{ url_for('static', filename='css/errors.css') }} ">
 <div class="d-flex justify-content-center align-items-center flex-column">
     <h1>
-        Не найдено
+        произошла непредвиденная ошибка
     </h1>
     <img src="{{ url_for('static', filename='img/errors/400_error.png') }}">
     <h2>
-        Сожалеем, но страниц с такими десертами ещё не придумали
+        Попробуйте повторить ваше действие позже
     </h2>
 </div>
 

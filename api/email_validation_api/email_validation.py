@@ -1,8 +1,8 @@
-from os import getenv
-
-from requests import Session
-from requests.adapters import HTTPAdapter, Retry
-
+# from os import getenv
+#
+# from requests import Session
+# from requests.adapters import HTTPAdapter, Retry
+#
 
 def validate_email(email: str) -> bool:
     """
@@ -24,4 +24,4 @@ def validate_email(email: str) -> bool:
     #         return False
     # content = response.json()
     # return content.get('is_smtp_valid', dict()).get('value', False)
-    return True
+    return bool(email)

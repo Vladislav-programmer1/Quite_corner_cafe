@@ -1,7 +1,7 @@
-from os import getenv
-
-from requests import Session
-from requests.adapters import HTTPAdapter, Retry
+# from os import getenv
+#
+# from requests import Session
+# from requests.adapters import HTTPAdapter, Retry
 
 
 def validate_phone_number(phone_number: str) -> bool:
@@ -24,4 +24,4 @@ def validate_phone_number(phone_number: str) -> bool:
     #         return False
     # content = response.json()
     # return content.get('valid')
-    return True
+    return bool(phone_number)

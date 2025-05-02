@@ -4,7 +4,7 @@ from sqlalchemy import Column, Time, Integer, String, Double, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy_serializer import SerializerMixin
 
-from .db_session import SqlAlchemyBase
+from .user import SqlAlchemyBase
 
 
 class Order(SqlAlchemyBase, SerializerMixin):

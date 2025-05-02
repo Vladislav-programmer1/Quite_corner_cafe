@@ -1,5 +1,9 @@
+import asyncio
+from typing import Any
+
 from flask import jsonify
 from flask_restful import Resource
+from sqlalchemy import select
 
 from api.rest.parsers import menu_parser
 from data import Menu
@@ -8,14 +12,20 @@ from .UserResource import abort_if_not_found
 
 
 class MenuList(Resource):
-    @staticmethod
-    def get():
-        with create_session() as session:
-            menu: list = session.query(Menu).all()
-        return jsonify({'menu': [menu_.to_dict() for menu_ in menu]})
+    def get(self):
+        return asyncio.run(self._get())
 
     @staticmethod
-    def post():
+    async def _get():
+        async with create_session() as session:
+            menu_list = map(lambda x: x[0], (await session.execute(select(Menu))).all())
+        return {'menu': [menu.to_dict(
+        ) for menu
+            in
+            menu_list]}
+
+    @staticmethod
+    async def _post():
         args = menu_parser.parse_args()
         menu = Menu()
         menu.id = args['id']
@@ -24,27 +34,42 @@ class MenuList(Resource):
         menu.description = args['description']
         menu.price = args['price']
         menu.is_available = args['is_available']
-        with create_session() as session:
-            session.add(menu)
-            session.commit()
-        return jsonify({'success': 'ok'})
+        try:
+            async with create_session() as session:
+                session.add(menu)
+                await session.commit()
+                return jsonify({'success': 'ok'})
+        except Exception as e:
+            return jsonify({'message': e})
+
+    def post(self):
+        return asyncio.run(self._post())
 
 
 class MenuItem(Resource):
     @staticmethod
-    def get(item_id: int):
-        abort_if_not_found(item_id, Menu)
-        with create_session() as session:
-            return session.query(Menu).get(item_id).to_dict()
+    async def _get(item_id: int):
+        await abort_if_not_found(item_id, Menu)
+        async with create_session() as session:
+            expression: Any = Menu.id == item_id
+            menu = (await session.execute(select(Menu).where(expression))).first()[0]
+        return menu.to_dict()
+
+    def get(self, item_id: int):
+        return asyncio.run(self._get(item_id))
 
     @staticmethod
-    def delete(item_id: int):
-        abort_if_not_found(item_id, Menu)
-        with create_session() as session:
-            menu_item = session.query(Menu).get(item_id)
-            session.delete(menu_item)
-            session.commit()
+    async def _delete(item_id: int):
+        await abort_if_not_found(item_id, Menu)
+        async with create_session() as session:
+            expression: Any = Menu.id == item_id
+            menu_item = (await session.execute(select(Menu).where(expression))).first()[0]
+            await session.delete(menu_item)
+            await session.commit()
         return jsonify({item_id: 'deleted'})
+
+    def delete(self, item_id: int):
+        return asyncio.run(self._delete(item_id))
 
     @staticmethod
     def put(item_id: int):

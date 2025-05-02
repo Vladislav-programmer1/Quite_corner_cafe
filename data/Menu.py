@@ -1,7 +1,7 @@
 import sqlalchemy as sa
 from sqlalchemy_serializer import SerializerMixin
 
-from data import SqlAlchemyBase
+from data.user import SqlAlchemyBase
 
 
 class Menu(SqlAlchemyBase, SerializerMixin):

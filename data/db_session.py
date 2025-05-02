@@ -1,14 +1,11 @@
-import sqlalchemy as sa
-from sqlalchemy import orm
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 
-# __factory: orm.sessionmaker | None = None
-__factory = None
-# SqlAlchemyBase: orm.DeclarativeBase = orm.declarative_base()
-SqlAlchemyBase = orm.declarative_base()
+from .__all_models import *
+
+__factory: async_sessionmaker | None = None
 
 
-def global_init(db_path: str = 'db/database.sqlite') -> None:
+async def global_init(db_path: str = 'db/database.sqlite') -> None:
     """
     This func makes initialization of the database
     :param db_path: path to the database
@@ -18,15 +15,14 @@ def global_init(db_path: str = 'db/database.sqlite') -> None:
     global __factory
     if __factory:
         return
-    engine = sa.create_engine(f"sqlite:///{db_path.strip()}?check_same_thread=False")
-    __factory = orm.sessionmaker(bind=engine)
-    from . import __all_models
-    if __all_models:
-        pass
-    SqlAlchemyBase.metadata.create_all(engine)
+    engine = create_async_engine(f"sqlite+aiosqlite:///{db_path.strip()}?check_same_thread=False")
+    __factory = async_sessionmaker(bind=engine, expire_on_commit=False, class_=AsyncSession)
+    async with create_session():
+        async with engine.begin() as connection:
+            await connection.run_sync(SqlAlchemyBase.metadata.create_all)
 
 
-def create_session() -> Session:
+def create_session() -> AsyncSession:
     """
     This func creates a new session.
     :return: Session

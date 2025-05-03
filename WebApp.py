@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 from flask import Flask, url_for, make_response, render_template, redirect, jsonify, Blueprint
 from flask_login import LoginManager, login_user, login_required, logout_user
 from flask_restful import Api
-from requests import post
 from sqlalchemy import select
 
 from api import ListUsers, MenuList, MenuItem, UserItem
@@ -38,6 +37,7 @@ class WebApp(Flask):
         self.base_logger = logging.getLogger(__name__)
         self.admin_blueprint = Blueprint('admin', __name__, template_folder='templates/stuff')
         self._create_routes()
+        self._set_error_handlers()
         self._create_admin_blueprint_routes()
         self.register_blueprint(self.admin_blueprint)
 
@@ -46,13 +46,12 @@ class WebApp(Flask):
         def admin_login():
             form = LoginForm()
             if form.validate_on_submit():
-                with create_session() as session:
-                    expression: Any = (User.email == form.email.data, User.user_level > 1)
-                    user: User | None = session.query(User).filter(expression).first()
-                    if user and user.check_password(form.password.data):
-                        return redirect('/account')
-                    return render_template('stuff/login.html', message='Неверный логин или пароль')
-            return render_template('stuff/login.html')
+                expression: Any = (User.email == form.email.data, User.user_level > 1)
+                user: User | None = asyncio.run(self.get_db_data(User, expression))
+                if user and user.check_password(form.password.data):
+                    return redirect('/account')
+                return render_template('stuff/login.html', message='Неверный логин или пароль')
+            return render_template('login.html')
 
     def _set_error_handlers(self):
         @self.errorhandler(404)
@@ -148,30 +147,6 @@ class WebApp(Flask):
             css_file = url_for('static', filename='css/style.css')
             return render_template('desktop/account.html', title='Личный кабинет', css_file=css_file)
 
-        @self.route('/check')
-        def check_user_api():
-            response = post(f'http://{getenv("server")}:{getenv("port")}/api/v2/users', json={
-                'name': 'Lando',
-                'surname': 'Norris',
-                'email': 'o.chernushina1123@mail.ru',
-                'password': 'password',
-                'sex': 'М',
-                'phone_number': '+79183105698'
-            })
-            return response.json()
-
-        @self.route('/check2')
-        def check_user_api2():
-            response = post(f'http://{getenv("server")}:{getenv("port")}/api/v2/users', json={
-                'name': 'Lando',
-                'surname': 'Norris',
-                'email': 'o.chernushina2123@mail.ru',
-                'password': 'password',
-                'sex': 'М',
-                'phone_number': '+79183105698'
-            })
-            return response.json()
-
         @self.route('/logout')
         def logout():
             logout_user()
@@ -194,10 +169,10 @@ class WebApp(Flask):
     def set_api_resources(self):
         self.api.add_resource(ListUsers, '/api/v2/users')
         self.api.add_resource(MenuList, '/api/v2/menu')
-        self.api.add_resource(MenuItem, '/api/v2/menu/<int:item_id>')
-        self.api.add_resource(UserItem, '/api/v2/users/<int:user_id>')
+        self.api.add_resource(MenuItem, '/api/v2/menu/<int:id_>')
+        self.api.add_resource(UserItem, '/api/v2/users/<int:id_>')
         self.api.add_resource(OrderList, '/api/v2/orders')
-        self.api.add_resource(OrderItem, '/api/v2/orders/<int:order_id>')
+        self.api.add_resource(OrderItem, '/api/v2/orders/<int:id_>')
 
     @staticmethod
     def check_agent(agent) -> str:

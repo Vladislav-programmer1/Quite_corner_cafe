@@ -1,11 +1,11 @@
 import asyncio
 import sqlite3
-from typing import Any, Optional, Type
+from typing import Any, Optional, Type, Callable
 
 import sqlalchemy
 from flask import jsonify
 from flask_restful import Resource, abort
-from flask_restful.reqparse import RequestParser
+from flask_restful.reqparse import RequestParser, Namespace
 from sqlalchemy import select
 
 from data import create_session, Order, Menu, User
@@ -36,11 +36,18 @@ class BaseResourceList(Resource):
     def validations(self, args):
         ...
 
+    @staticmethod
+    def refactor_args(args: Namespace) -> tuple[Namespace, list]:
+        return args, list()
+
     async def _post(self):
         args = self.post_parser.parse_args()
         if (res := self.validations(args)) is not None:
             return res
+        args, action_list = self.refactor_args(args)
         base = self.base_class(**args)
+        for action in action_list:
+            action(base)
         async with create_session() as session:
             try:
                 session.add(base)
@@ -60,19 +67,22 @@ class BaseResourceList(Resource):
 class BaseResourceItem(Resource):
     def __init__(self, put_parser: RequestParser, base, only: tuple[str, ...] = tuple()):
         self.only = only
-        self.base = base
+        self.base: Type[Optional[User | Menu | Order]] = base
         self.put_parser = put_parser
 
     def get(self, id_: int):
         return asyncio.run(self._get(id_))
 
-    async def _get(self, id_: int):
+    async def _get_item(self, id_: int):
         await abort_if_not_found(id_, self.base)
         async with create_session() as session:
             expression: Any = self.base.id == id_
             item = (await session.execute(select(self.base).where(expression))).first()[0]
-        return item.to_dict(
-            only=self.only)
+        return item
+
+    async def _get(self, id_: int):
+        item = await self._get_item(id_)
+        return item.to_dict(only=self.only)
 
     def delete(self, id_: int):
         return asyncio.run(self._delete(id_))
@@ -86,15 +96,25 @@ class BaseResourceItem(Resource):
             await session.commit()
         return jsonify({id_: 'deleted'})
 
+    @staticmethod
+    def refactor_args(args: Namespace) -> tuple[Namespace, list[Callable]]:
+        return args, list()
+
     async def _put(self, id_: int):
         await abort_if_not_found(id_, self.base)
         args = self.put_parser.parse_args()
+        args, action_list = self.refactor_args(args)
         base = self.base(**args)
         base.id = id_
-
+        for action in action_list:
+            action(base)
+        item: User | Order | Menu = await self._get_item(id_)
+        for attribute in base.attributes:
+            if (value := getattr(base, attribute)) is not None:
+                setattr(item, attribute, value)
         async with create_session() as session:
             try:
-                await session.merge(base)
+                await session.merge(item)
                 await session.commit()
                 return jsonify({id_: 'updated'})
             except Exception as e:
@@ -105,7 +125,7 @@ class BaseResourceItem(Resource):
     def put(self, id_: int):
         return asyncio.run(self._put(id_))
 
-    # TODO: put requests, api_key verification
+    # TODO: api_key verification
 
 
 async def abort_if_not_found(id_, class_):

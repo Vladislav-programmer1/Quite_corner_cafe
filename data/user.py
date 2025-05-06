@@ -1,4 +1,5 @@
 from datetime import datetime as dt
+from typing import Literal
 
 import sqlalchemy as sa
 from flask_login import UserMixin
@@ -24,10 +25,28 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     creation_datetime = sa.Column(sa.DateTime, default=dt.now)
     modified_datetime = sa.Column(sa.DateTime, default=dt.now, nullable=True)
     user_level = sa.Column(sa.Integer, default=1)
-    orders = relationship('Order')
+    orders = relationship('Order', lazy='selectin')
+
+    def __init__(self, *, name: str,
+                 surname: str,
+                 sex: Literal['M', 'F', 'М', 'Ж'],
+                 phone_number: str,
+                 email: str,
+                 password: str
+                 ):
+        self.name = name
+        self.surname = surname
+        self.sex = sex
+        self.phone_number = phone_number
+        self.email = email
+        self.set_password(password)
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.hashed_password, password)
 
     def set_password(self, password: str) -> None:
-        self.hashed_password = generate_password_hash(password)
+        self.hashed_password = self.get_hash(password)
+
+    @staticmethod
+    def get_hash(value: str):
+        return generate_password_hash(value)

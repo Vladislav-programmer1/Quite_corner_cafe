@@ -1,3 +1,4 @@
+import sqlalchemy.orm
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine, AsyncSession
 
 from .__all_models import *
@@ -28,4 +29,3 @@ def create_session() -> AsyncSession:
     :return: Session
     """
     return __factory()
-# TODO: refactor this file for async programming

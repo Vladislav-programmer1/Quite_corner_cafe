@@ -1,5 +1,6 @@
 import asyncio
-from typing import Any
+import sqlite3
+from typing import Any, Optional, Type
 
 import sqlalchemy
 from flask import jsonify
@@ -7,11 +8,12 @@ from flask_restful import Resource, abort
 from flask_restful.reqparse import RequestParser
 from sqlalchemy import select
 
-from data import create_session
+from data import create_session, Order, Menu, User
 
 
 class BaseResourceList(Resource):
-    def __init__(self, post_parser: RequestParser, base, name: str, only: tuple[str, ...] = tuple()):
+    def __init__(self, post_parser: RequestParser, base: Optional[Type[User | Menu | Order]], name: str,
+                 only: tuple[str, ...] = tuple()):
         self.post_parser = post_parser
         self.base_class = base
         self.only = only
@@ -36,24 +38,23 @@ class BaseResourceList(Resource):
 
     async def _post(self):
         args = self.post_parser.parse_args()
-        print(args.items())
         if (res := self.validations(args)) is not None:
             return res
-        base = self.base_class()
-        self.set_values(base, args)
+        base = self.base_class(**args)
         async with create_session() as session:
             try:
                 session.add(base)
                 await session.commit()
-            except sqlalchemy.exc.IntegrityError:
+            except (sqlalchemy.exc.IntegrityError, sqlite3.IntegrityError):
                 del base
-                return jsonify({'error': 'This object is already exists'})
+
+                return jsonify({'error': 'This object has already exists'})
         return jsonify({'status': 'ok'})
 
-    @staticmethod
-    def set_values(base, args):
-        for key, value in args.items():
-            setattr(base, key, value)
+    # @staticmethod
+    # def set_values(base, args):
+    #     for key, value in args.items():
+    #         setattr(base, key, value)
 
 
 class BaseResourceItem(Resource):
@@ -86,7 +87,20 @@ class BaseResourceItem(Resource):
         return jsonify({id_: 'deleted'})
 
     async def _put(self, id_: int):
-        pass
+        await abort_if_not_found(id_, self.base)
+        args = self.put_parser.parse_args()
+        base = self.base(**args)
+        base.id = id_
+
+        async with create_session() as session:
+            try:
+                await session.merge(base)
+                await session.commit()
+                return jsonify({id_: 'updated'})
+            except Exception as e:
+                if e:
+                    pass
+                return jsonify({"error": e.args})
 
     def put(self, id_: int):
         return asyncio.run(self._put(id_))

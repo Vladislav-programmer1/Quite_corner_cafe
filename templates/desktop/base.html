@@ -17,53 +17,13 @@
 
 </head>
 <body>
-<header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary custom-navbar">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">Кафе "Тихий уголок"</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="/">Меню</a>
-                    </li>
-                    {% if current_user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/logout">Выйти</a>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/login" role="button"
-                           aria-expanded="true">
-                            Войти
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" aria-disabled="false" href="/signup">Зарегистрироваться</a>
-                    </li>
-                    {% endif %}
-                </ul>
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-            </div>
-        </div>
-    </nav>
-</header>
+{% include "desktop/fragments/_header.html" %}
 <main>
     {% block content %}
     {% endblock %}
 </main>
-<footer>
-    <div id="app"></div>
-    {% block footer %}
-    {% endblock %}
-</footer>
+
+{% block footer %}{% endblock %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"

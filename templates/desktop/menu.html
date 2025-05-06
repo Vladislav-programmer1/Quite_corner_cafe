@@ -1,0 +1,11 @@
+{% extends "desktop/base.html" %}
+{% block content %}
+
+<h3>Lunch</h3>
+{% for menu_item in menu["menu"]["Lunch"] %}
+    <div class="card">
+        <div>{{menu_item["dish_name"]}}</div>
+        <div>{{menu_item["category"]}}</div>
+    </div>
+{% endfor %}
+{% endblock %}

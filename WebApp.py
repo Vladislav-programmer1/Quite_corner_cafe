@@ -5,57 +5,97 @@ from os import getenv
 from typing import Any, Type
 
 import requests
+from aiohttp import ClientSession, ClientTimeout
 from dotenv import load_dotenv
-from flask import Flask, url_for, make_response, render_template, redirect, jsonify, Blueprint
+from flask import Flask, url_for, make_response, render_template, redirect, jsonify, Blueprint, Response
 from flask_login import LoginManager, login_user, login_required, logout_user
 from flask_restful import Api
 from sqlalchemy import select
+from werkzeug.exceptions import HTTPException
 
-from api import ListUsers, MenuList, MenuItem, UserItem
-from api.rest.OrderResource import OrderList, OrderItem
+from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
 from config import set_security_parameters
 from data import global_init, create_session, User
-from forms import LoginForm, SignupForm
+from forms import LoginForm, SignupForm  # Import all packages needed
 
 
 class WebApp(Flask):
+    """
+    This is the main class of the Application, inherited from flask.Flask.
+    """
+
     def __init__(self, name):
         super().__init__(name)
+
         self.login_manager = LoginManager()
         self.login_manager.init_app(self)
+        # create and init login_manager
+
         load_dotenv()
+        # load environment
+
         set_security_parameters(self,
                                 SECRET_KEY=getenv("SECRET_KEY"),
                                 SESSION_COOKIE_SECURE=True,
                                 REMEMBER_COOKIE_DURATION=timedelta(days=180)
                                 )
+        # set security params of the app
+
         self.api = Api(self)
         self.set_api_resources()
+        # create flask_restful.Api and set resources for it
+
         logging.basicConfig(filename='logs.log',
                             format='%(asctime)s %(levelname)s %(name)s %(message)s',
                             level=logging.WARNING, filemode='w')
         self.base_logger = logging.getLogger(__name__)
+        # set logger and settings for him
+
         self.admin_blueprint = Blueprint('admin', __name__, template_folder='templates/stuff')
+        # create flask.Blueprint for stuff pages of the app
+
         self._create_routes()
         self._set_error_handlers()
         self._create_admin_blueprint_routes()
-        self.register_blueprint(self.admin_blueprint)
+        # set all routes needed
 
-    def _create_admin_blueprint_routes(self):
+        self.register_blueprint(self.admin_blueprint)
+        # register blueprint
+
+    def _create_admin_blueprint_routes(self) -> None:
+        """
+        Creates rotes for admin blueprint
+        :return: None
+        """
+
         @self.admin_blueprint.route('/stuff/login', methods=['POST', 'GET'])
-        def admin_login():
-            form = LoginForm()
-            if form.validate_on_submit():
+        def admin_login() -> str | Response:
+            """
+            shows page  of login if user has not authorized else redirect him to account page
+            :return: str or Response
+            """
+            form = LoginForm()  # create login form
+            if form.validate_on_submit():  # validation on success
                 expression: Any = (User.email == form.email.data, User.user_level > 1)
-                user: User | None = asyncio.run(self.get_db_data(User, expression))
-                if user and user.check_password(form.password.data):
-                    return redirect('/account')
+                user: User | None = asyncio.run(self.get_db_data(User, expression))  # get user if exists
+                if user and user.check_password(form.password.data):  # validate data
+                    return redirect('/account')  # Redirect to an account page
                 return render_template('stuff/login.html', message='Неверный логин или пароль')
             return render_template('login.html')
 
-    def _set_error_handlers(self):
+    def _set_error_handlers(self) -> None:
+        """
+        Creates error handlers
+        :return: None
+        """
+
         @self.errorhandler(404)
-        def not_found(error):
+        def not_found(error: HTTPException) -> Response:
+            """
+            Catch http-error 404
+            :param error:
+            :return:
+            """
             img_path = url_for('static', filename='img/errors/404_error.png')
             css_path = url_for('static', filename='css/errors.css')
             self.base_logger.critical(error)
@@ -65,7 +105,7 @@ class WebApp(Flask):
                                  404)
 
         @self.errorhandler(400)
-        def bad_request(error):
+        def bad_request(error: HTTPException) -> Response:
             return make_response(render_template('errors/bad_request.html', title='Bad request', error=error), 400)
 
         @self.errorhandler(401)
@@ -79,9 +119,17 @@ class WebApp(Flask):
             return make_response(render_template('errors/server_error.html', title='Server error', error=error), 500)
 
     def _create_routes(self):
-        self._set_error_handlers()
+        """
 
-        async def _load_user(user_id: int):
+        :return:
+        """
+
+        @self.route('/menu', methods=['GET'])
+        def get_menu():
+            menu = asyncio.run(self.get_menu_list())
+            return render_template('desktop/menu.html', menu=menu)
+
+        async def _load_user(user_id: int) -> tuple:
             async with create_session() as db_sess:
                 expression: Any = User.id == user_id
                 user = (await db_sess.execute(select(User).where(expression))).first()
@@ -89,6 +137,11 @@ class WebApp(Flask):
 
         @self.login_manager.user_loader
         def load_user(user_id: int):
+            """
+
+            :param user_id:
+            :return: tuple of user_data
+            """
             return asyncio.run(_load_user(user_id))
 
         @self.route('/login', methods=['POST', 'GET'])
@@ -100,7 +153,7 @@ class WebApp(Flask):
                 password = form.password.data
                 check = form.remember_me.data
                 user = asyncio.run(self.get_db_data(User, expression=(User.email == email)))
-                if not user[0] or not user[0].check_password(password):
+                if not user or not user[0].check_password(password):
                     return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file,
                                            message='Неверный логин или пароль')
                 login_user(user[0], remember=check)
@@ -134,7 +187,7 @@ class WebApp(Flask):
                     "password": password,
                 }
                 response = requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/users', json=params)
-                if response.status_code == 200 and not response.json().get('error'):
+                if response.status_code == 200 and response.json().get('error') is None:
                     login_user(asyncio.run(self.get_db_data(User, boolean))[0])
                     return redirect('/account')
                 else:
@@ -173,6 +226,12 @@ class WebApp(Flask):
         self.api.add_resource(UserItem, '/api/v2/users/<int:id_>')
         self.api.add_resource(OrderList, '/api/v2/orders')
         self.api.add_resource(OrderItem, '/api/v2/orders/<int:id_>')
+
+    @staticmethod
+    async def get_menu_list() -> dict:
+        async with ClientSession(timeout=ClientTimeout(total=2)) as session:
+            async with session.get(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu') as response:
+                return await response.json()
 
     @staticmethod
     def check_agent(agent) -> str:

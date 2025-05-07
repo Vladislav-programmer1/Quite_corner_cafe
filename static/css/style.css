@@ -49,6 +49,10 @@ form {
     margin-bottom: 20px;
 }
 
+.custom-text-color {
+    color: #5c3d2e;
+}
+
 .cafe-text p {
     font-size: 18px;
     line-height: 1.6;

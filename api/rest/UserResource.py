@@ -1,73 +1,55 @@
-import sqlalchemy
 from flask import jsonify
-from flask_restful import Resource, abort
+from flask_restful.reqparse import Namespace
 
 from api.email_validation_api.email_validation import validate_email
-from api.rest.parsers import parser
-from data import create_session, User
+from api.phone_number_validation_api import validate_phone_number
+from api.rest.BaseResource import BaseResourceList, BaseResourceItem
+from api.rest.parsers import parser, put_parser
+from data import User
 
 
-class ListUsers(Resource):
-    @staticmethod
-    def get():
-        with create_session() as session:
-            users: list = session.query(User).all()
-        return jsonify(
-            {'users': [user.to_dict(
-                only=('id', 'name', 'surname', 'email', 'level_of_loyalty', 'creation_datetime', 'user_level'))
-                for user in users]})
+class ListUsers(BaseResourceList):
+    def __init__(self):
+        super().__init__(parser, User, 'users',
+                         ('id', 'name', 'surname', 'email', 'phone_number', 'sex', 'modified_datetime',
+                          'level_of_loyalty', 'creation_datetime', 'user_level'))
 
-    @staticmethod
-    def post():
-        args = parser.parse_args()
-        user = User()
-        user.id = args['id']
-        user.name = args['name']
-        user.surname = args['surname']
-        user.set_password(args['hashed_password'])
-        if validate_email(args['email']):
-            user.email = args['email']
-        else:
-            del user
+    async def validations(self, args: Namespace):
+        if not await validate_email(args['email']):
             return jsonify({'error': 'Invalid email'})
-        user.level_of_loyalty = args['level_of_loyalty']
-        with create_session() as session:
-            try:
-                session.add(user)
-                session.commit()
-            except sqlalchemy.exc.IntegrityError:
-                del user
-                return jsonify({'error': 'This already is already set for other user. Email must be unique.'})
-        return jsonify({'status': 'ok'})
-
-
-class UserItem(Resource):
+        if not await validate_phone_number(args['phone_number']):
+            return jsonify({'error': 'Invalid phone number'})
+        if any(not args[value].isalpha() for value in ('name', 'surname', 'sex')):
+            return jsonify({'error': 'Name, surname and sex must be strings'})
 
     @staticmethod
-    def get(user_id: int):
-        abort_if_not_found(user_id, User)
-        with create_session() as session:
-            user: User = session.query(User).get(user_id)
-        return user.to_dict(
-            only=('id', 'name', 'surname', 'email', 'level_of_loyalty', 'creation_datetime', 'user_level'))
+    def refactor_args(args: Namespace) -> tuple[Namespace, list]:
+        res_list = list()
+        if 'password' in args.keys():
+            password = args['password']
+            res_list.append(lambda self: self.set_password(password))
+            del args['password']
+        return args, res_list
+
+
+class UserItem(BaseResourceItem):
+    def __init__(self):
+        super().__init__(put_parser, User,
+                         ('id', 'name', 'surname', 'email', 'level_of_loyalty', 'creation_datetime', 'user_level'))
 
     @staticmethod
-    def delete(user_id: int):
-        abort_if_not_found(user_id, User)
-        with create_session() as session:
-            user = session.get(User, user_id)
-            session.delete(user)
-            session.commit()
-        return jsonify({user_id: 'deleted'})
+    def refactor_args(args: Namespace) -> tuple[Namespace, list]:
+        res_list = list()
+        if 'password' in args.keys():
+            password = args['password']
+            res_list.append(lambda self: self.set_password(password))
+            del args['password']
+        return args, res_list
 
-    @staticmethod
-    def put(user_id: int):
-        abort_if_not_found(user_id, User)
-        pass
-
-
-def abort_if_not_found(id_, class_):
-    with create_session() as session:
-        obj = session.query(class_).get(id_)
-        if not obj:
-            abort(404, message=f"Data with id {id_} is  not found")
+    async def validations(self, args: Namespace):
+        if args.get('email') is not None and not await validate_email(args['email']):
+            return jsonify({'error': 'Invalid email'})
+        if args.get('phone_number') is not None and not await validate_phone_number(args['phone_number']):
+            return jsonify({'error': 'Invalid phone number'})
+        if any(not args[value].isalpha() for value in ('name', 'surname', 'sex')):
+            return jsonify({'error': 'Name, surname and sex must be strings'})

@@ -1,51 +1,25 @@
 from flask import jsonify
-from flask_restful import Resource
+from sqlalchemy import select
 
-from api.rest.parsers import menu_parser
-from data import Menu
-from data import create_session
-from .UserResource import abort_if_not_found
-
-
-class MenuList(Resource):
-    @staticmethod
-    def get():
-        with create_session() as session:
-            menu: list = session.query(Menu).all()
-        return jsonify({'menu': [menu_.to_dict() for menu_ in menu]})
-
-    @staticmethod
-    def post():
-        args = menu_parser.parse_args()
-        menu = Menu()
-        menu.id = args['id']
-        menu.img_src = args['img_src']
-        menu.dish_name = args['dish_name']
-        menu.description = args['description']
-        menu.price = args['price']
-        menu.is_available = args['is_available']
-        with create_session() as session:
-            session.add(menu)
-            session.commit()
-        return jsonify({'success': 'ok'})
+from api.rest.parsers import menu_parser, menu_put_parser
+from data import Menu, create_session
+from .BaseResource import BaseResourceList, BaseResourceItem
 
 
-class MenuItem(Resource):
-    @staticmethod
-    def get(item_id: int):
-        abort_if_not_found(item_id, Menu)
-        with create_session() as session:
-            return session.query(Menu).get(item_id).to_dict()
+class MenuList(BaseResourceList):
 
-    @staticmethod
-    def delete(item_id: int):
-        abort_if_not_found(item_id, Menu)
-        with create_session() as session:
-            menu_item = session.query(Menu).get(item_id)
-            session.delete(menu_item)
-            session.commit()
-        return jsonify({item_id: 'deleted'})
+    def __init__(self):
+        super().__init__(menu_parser, Menu, 'menu')
 
-    @staticmethod
-    def put(item_id: int):
-        pass
+    async def _get(self):
+        async with create_session() as session:
+            data = map(lambda x: x[0], (await session.execute(select(self.base_class))).all())
+        res_dict = dict()
+        for item in data:
+            res_dict[item.category] = res_dict.get(item.category, []) + [item.to_dict()]
+        return jsonify({self.name: res_dict})
+
+
+class MenuItem(BaseResourceItem):
+    def __init__(self):
+        super().__init__(menu_put_parser, Menu)

@@ -1,7 +1,6 @@
 {% extends "desktop/base.html" %}
 
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <div class="content-wrapper d-flex justify-content-center align-items-center flex-column">
     <img src="{{ url_for('static', filename='img/base/index.png') }}" alt="Welcome Image">
     <p></p>
@@ -10,11 +9,11 @@
         <div class="carousel-inner">
             <div class="carousel-item active" data-bs-interval="10000">
                 <div class="card custom-card">
-                    <img src="..." class="card-img-top" alt="...">
+                    <img src="" class="card-img-top" alt="...">
                     <div class="card-body">
                         <h5 class="card-title">Card title</h5>
                         <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="#" class="btn custom-btn">Go somewhere</a>
+                        <a href="/" class="btn custom-btn">Go somewhere</a>
                     </div>
                 </div>
             </div>
@@ -43,6 +42,7 @@
 {% endblock %}
 
 {% block footer %}
+{% include "desktop/fragments/_map.html" %}
 <footer class="custom-footer">
     <div class="container d-flex justify-content-between align-items-center">
         <div>📞 Телефон: +7 900 123 45 67</div>

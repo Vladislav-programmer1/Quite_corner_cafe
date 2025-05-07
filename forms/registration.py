@@ -1,3 +1,5 @@
+import asyncio
+
 from flask_wtf import FlaskForm
 from wtforms import StringField, EmailField, SubmitField, PasswordField, TelField, RadioField, Field
 from wtforms.validators import DataRequired, Email, equal_to, ValidationError
@@ -15,14 +17,14 @@ def validate_text_values(form: FlaskForm, field: Field):
 def email_validation(form: FlaskForm, field: Field):
     if form:
         pass
-    if not validate_email(field.data):
+    if not asyncio.run(validate_email(field.data)):
         raise ValidationError("Некорректный email")
 
 
 def phone_validation(form: FlaskForm, field: Field):
     if form:
         pass
-    if not validate_phone_number(field.data):
+    if not asyncio.run(validate_phone_number(field.data)):
         raise ValidationError("Некорректный номер телефона")
 
 

@@ -1,2 +1,2 @@
-from .user_parser import *
-from .menu_parser import *
+from .post_parsers import *
+from .put_parsers import *

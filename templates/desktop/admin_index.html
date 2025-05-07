@@ -2,6 +2,49 @@
 
 {% block content %}
 
+<body class="background-wrapper">
 
+    <div class="profile-container">
+        <div class="row">
+            <div class="col">
+                <h1 class="profile-heading">Панель администратора</h1>
 
+                <div class="admin-controls">
+                    <div class="row mt-4">
+                        <div class="col-md-6 mb-4">
+                            <div class="custom-admin-card card h-100" style="border-color: #5c3d2e;">
+                                <div class="card-body">
+                                    <h3 class="card-title" style="color: #5c3d2e;">🛎️ Управление меню</h3>
+                                    <p class="card-text">
+                                        Добавляйте новые блюда, редактируйте существующие позиции
+                                        и обновляйте ассортимент меню
+                                    </p>
+                                    <a href="{{ url_for('add_dish') }}" class="btn custom-btn" style="color: #5c3d2e;">
+                                        Добавить блюдо ➕
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 mb-4">
+                            <div class="custom-admin-card card h-100" style="border-color: #5c3d2e;">
+                                <div class="card-body">
+                                    <h3 class="card-title" style="color: #5c3d2e;">🎁 Управление акциями</h3>
+                                    <p class="card-text">
+                                        Создавайте специальные предложения, настраивайте скидки
+                                        и промо-кампании для привлечения клиентов
+                                    </p>
+                                    <a href="{{ url_for('add_promotion') }}" class="btn custom-btn" style="color: #5c3d2e;">
+                                        Добавить акцию 💰
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
 {% endblock %}

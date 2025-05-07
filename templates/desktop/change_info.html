@@ -1,1 +1,29 @@
 {% extends "desktop/base.html" %}
+
+{% block content %}
+        <div class="d-flex justify-content-center align-items-center mt-5 mb-5">
+            <div class="card shadow-sm" style="max-width: 400px; width: 100%;" >
+                <div class="text-center" style="margin-top: -30px;">
+                    <div style="width: 60px; height: 60px; background-color: #5c3d2e; border-radius: 50%; margin: auto; display: flex; align-items: center; justify-content: center;">
+                        <img src="{{ url_for('static', filename='img/icons/user-icon') }}" class="user-icon" style="width: 30px; height: 30px;" alt="Icon">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-center">Редактировать профиль</h5>
+                    <form method="POST" action="/save_changes">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Имя</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ account[1] }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Номер телефона</label>
+                            <input type="text" class="form-control" id="phone" name="phone" value="{{ account[2] }}">
+                        </div>
+                        <button type="submit" class="btn custom-btn w-100">Сохранить изменения</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+
+{% endblock %}

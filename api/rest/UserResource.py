@@ -14,10 +14,10 @@ class ListUsers(BaseResourceList):
                          ('id', 'name', 'surname', 'email', 'phone_number', 'sex', 'modified_datetime',
                           'level_of_loyalty', 'creation_datetime', 'user_level'))
 
-    def validations(self, args):
-        if not validate_email(args['email']):
-            return jsonify({'error': 'Invalid email'})  # fixme can't start new event loop
-        if not validate_phone_number(args['phone_number']):
+    async def validations(self, args: Namespace):
+        if not await validate_email(args['email']):
+            return jsonify({'error': 'Invalid email'})
+        if not await validate_phone_number(args['phone_number']):
             return jsonify({'error': 'Invalid phone number'})
         if any(not args[value].isalpha() for value in ('name', 'surname', 'sex')):
             return jsonify({'error': 'Name, surname and sex must be strings'})
@@ -45,3 +45,11 @@ class UserItem(BaseResourceItem):
             res_list.append(lambda self: self.set_password(password))
             del args['password']
         return args, res_list
+
+    async def validations(self, args: Namespace):
+        if args.get('email') is not None and not await validate_email(args['email']):
+            return jsonify({'error': 'Invalid email'})
+        if args.get('phone_number') is not None and not await validate_phone_number(args['phone_number']):
+            return jsonify({'error': 'Invalid phone number'})
+        if any(not args[value].isalpha() for value in ('name', 'surname', 'sex')):
+            return jsonify({'error': 'Name, surname and sex must be strings'})

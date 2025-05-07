@@ -33,7 +33,7 @@ class BaseResourceList(Resource):
     def post(self):
         return asyncio.run(self._post())
 
-    def validations(self, args):
+    async def validations(self, args):
         ...
 
     @staticmethod
@@ -42,7 +42,7 @@ class BaseResourceList(Resource):
 
     async def _post(self):
         args = self.post_parser.parse_args()
-        if (res := self.validations(args)) is not None:
+        if (res := await self.validations(args)) is not None:
             return res
         args, action_list = self.refactor_args(args)
         base = self.base_class(**args)
@@ -100,9 +100,14 @@ class BaseResourceItem(Resource):
     def refactor_args(args: Namespace) -> tuple[Namespace, list[Callable]]:
         return args, list()
 
+    async def validations(self, args: Namespace):
+        ...
+
     async def _put(self, id_: int):
         await abort_if_not_found(id_, self.base)
         args = self.put_parser.parse_args()
+        if (res := await self.validations(args)) is not None:
+            return res
         args, action_list = self.refactor_args(args)
         base = self.base(**args)
         base.id = id_

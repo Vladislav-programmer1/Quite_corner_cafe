@@ -10,25 +10,29 @@ from dotenv import load_dotenv
 from flask import Flask, url_for, make_response, render_template, redirect, jsonify, Blueprint, Response
 from flask_login import LoginManager, login_user, login_required, logout_user
 from flask_restful import Api
-from sqlalchemy import select
+from sqlalchemy import select, Row
 from werkzeug.exceptions import HTTPException
+from werkzeug.user_agent import UserAgent
 
 from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
 from config import set_security_parameters
-from data import global_init, create_session, User
+from data import global_init, create_session, User, Menu, Order
 from forms import LoginForm, SignupForm  # Import all packages needed
 
+
+# from flask_security import roles_required, roles_accepted,
 
 class WebApp(Flask):
     """
     This is the main class of the Application, inherited from flask.Flask.
     """
 
-    def __init__(self, name):
+    def __init__(self, name: str):
         super().__init__(name)
 
         self.login_manager = LoginManager()
         self.login_manager.init_app(self)
+        self.setup_login_manager()
         # create and init login_manager
 
         load_dotenv()
@@ -89,13 +93,20 @@ class WebApp(Flask):
         :return: None
         """
 
+        # __error_docs = \
+        #     "Catch http-error {}\n" \
+        #     "param error: HTTPException which was raised\n" \
+        #     ":return: status-code and error template"
+        #
+        # def set_doc(func: Callable) -> Callable:
+        #     def wrapp(error: HTTPException) -> Response:
+        #         func.__doc__ = __error_docs.format(error.code)
+        #         return func(error)
+        #
+        #     return wrapp
+
         @self.errorhandler(404)
         def not_found(error: HTTPException) -> Response:
-            """
-            Catch http-error 404
-            :param error:
-            :return:
-            """
             img_path = url_for('static', filename='img/errors/404_error.png')
             css_path = url_for('static', filename='css/errors.css')
             self.base_logger.critical(error)
@@ -118,31 +129,42 @@ class WebApp(Flask):
         def server_error(error):
             return make_response(render_template('errors/server_error.html', title='Server error', error=error), 500)
 
-    def _create_routes(self):
+    def setup_login_manager(self) -> None:
+        """
+        Creates func load_user needed for self.login_manager
+        :return: None
         """
 
-        :return:
+        async def _load_user(user_id: int) -> User:
+            """
+            get user from database by user_id
+            :param user_id: user identity
+            :return: User object
+            """
+            async with create_session() as db_sess:
+                expression: Any = User.id == user_id
+                user: Row[User] = (await db_sess.execute(select(User).where(expression))).first()
+            return user[0]
+
+        @self.login_manager.user_loader
+        def load_user(user_id: int) -> User:
+            """
+            get result of coroutine _load_user (see docs there)
+            :param user_id: user identity
+            :return: User
+            """
+            return asyncio.run(_load_user(user_id))
+
+    def _create_routes(self) -> None:
+        """
+        Creates routes (functions decorated by self.route method)  for the main app
+        :return: None
         """
 
         @self.route('/menu', methods=['GET'])
         def get_menu():
             menu = asyncio.run(self.get_menu_list())
             return render_template('desktop/menu.html', menu=menu)
-
-        async def _load_user(user_id: int) -> tuple:
-            async with create_session() as db_sess:
-                expression: Any = User.id == user_id
-                user = (await db_sess.execute(select(User).where(expression))).first()
-            return user[0]
-
-        @self.login_manager.user_loader
-        def load_user(user_id: int):
-            """
-
-            :param user_id:
-            :return: tuple of user_data
-            """
-            return asyncio.run(_load_user(user_id))
 
         @self.route('/login', methods=['POST', 'GET'])
         def authorize():
@@ -153,10 +175,10 @@ class WebApp(Flask):
                 password = form.password.data
                 check = form.remember_me.data
                 user = asyncio.run(self.get_db_data(User, expression=(User.email == email)))
-                if not user or not user[0].check_password(password):
+                if not user or not user.check_password(password):
                     return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file,
                                            message='Неверный логин или пароль')
-                login_user(user[0], remember=check)
+                login_user(user, remember=check)
                 return redirect('/account')
             css_file = url_for('static', filename='css/style.css')
             return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file)
@@ -175,7 +197,7 @@ class WebApp(Flask):
                 boolean: Any = (User.email == email)
 
                 user = asyncio.run(self.get_db_data(User, boolean))
-                if user:
+                if user is not None:
                     return render_template('desktop/signup.html', title='Регистрация', css_file=css_file,
                                            message="Пользователь с таким email уже существует", form=form)
                 params = {
@@ -188,7 +210,7 @@ class WebApp(Flask):
                 }
                 response = requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/users', json=params)
                 if response.status_code == 200 and response.json().get('error') is None:
-                    login_user(asyncio.run(self.get_db_data(User, boolean))[0])
+                    login_user(asyncio.run(self.get_db_data(User, boolean)))
                     return redirect('/account')
                 else:
                     return jsonify(response.json())
@@ -219,7 +241,11 @@ class WebApp(Flask):
         def change_info():
             return render_template('desktop/change_info.html')
 
-    def set_api_resources(self):
+    def set_api_resources(self) -> None:
+        """
+        Add resources needed to the Api
+        :return: None
+        """
         self.api.add_resource(ListUsers, '/api/v2/users')
         self.api.add_resource(MenuList, '/api/v2/menu')
         self.api.add_resource(MenuItem, '/api/v2/menu/<int:id_>')
@@ -229,12 +255,23 @@ class WebApp(Flask):
 
     @staticmethod
     async def get_menu_list() -> dict:
+        """
+        Get menu from api
+        :return: json response from api
+        """
         async with ClientSession(timeout=ClientTimeout(total=2)) as session:
             async with session.get(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu') as response:
                 return await response.json()
 
     @staticmethod
-    def check_agent(agent) -> str:
+    def check_agent(agent: UserAgent) -> str:
+        # TODO: this method
+
+        """
+        check user agent and return type of device (desktop or mobile).
+        :param agent: flask.request.user-agent
+        :return: Optional
+        """
         # if 'Apple' in agent.string or 'Android' in agent.string:
         #     type_ = 'mobile'
         # else:
@@ -249,15 +286,25 @@ class WebApp(Flask):
             load_dotenv_: bool = True,
             **options: Any,
     ) -> None:
-        asyncio.run(self.global_init())
+        asyncio.run(self.global_init())  # init the database before running the app
         super().run(host, port, debug, load_dotenv_, **options)
 
     @staticmethod
-    async def global_init():
+    async def global_init() -> None:
+        """
+        Init of async database
+        :return: None
+        """
         return await global_init()
 
     @staticmethod
-    async def get_db_data(class_: Type, expression: Any):
+    async def get_db_data(class_: Type, expression: Any) -> User | Menu | Order | None:
+        """
+        Get object of the orm-model "class_" from database selected by "expression"
+        :param class_: class of model of db
+        :param expression: bool expression like obj.id == id for selecting an object
+        :return: Obj
+        """
         async with create_session() as session:
             obj = (await session.execute(select(class_).where(expression))).first()
-        return obj
+        return obj[0] if obj is not None else obj

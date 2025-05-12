@@ -7,7 +7,7 @@ from typing import Any, Type
 import requests
 from aiohttp import ClientSession, ClientTimeout
 from dotenv import load_dotenv
-from flask import Flask, url_for, make_response, render_template, redirect, jsonify, Blueprint, Response
+from flask import Flask, url_for, make_response, render_template, redirect, jsonify, Blueprint, Response, session
 from flask_login import LoginManager, login_user, login_required, logout_user
 from flask_restful import Api
 from sqlalchemy import select, Row
@@ -107,27 +107,32 @@ class WebApp(Flask):
 
         @self.errorhandler(404)
         def not_found(error: HTTPException) -> Response:
-            img_path = url_for('static', filename='img/errors/404_error.png')
-            css_path = url_for('static', filename='css/errors.css')
             self.base_logger.critical(error)
-            return make_response(render_template('errors/not_found.html',
-                                                 error=error, img_path=img_path, css_file=css_path,
-                                                 title='Not Found'),
-                                 404)
+            return make_response(
+                render_template('errors/not_found.html',
+                                error=error, title='Не найдено'), 404
+            )
 
         @self.errorhandler(400)
         def bad_request(error: HTTPException) -> Response:
-            return make_response(render_template('errors/bad_request.html', title='Bad request', error=error), 400)
+            return make_response(
+                render_template('errors/bad_request.html',
+                                title='Ошибка', error=error), 400
+            )
 
         @self.errorhandler(401)
         def unauthorized(error):
-            if error:
-                pass
-            return redirect('/')
+            return make_response(
+                render_template('errors/unauthorized.html',
+                                title='Вы не авторизованы', error=error), 401
+            )
 
         @self.errorhandler(500)
         def server_error(error):
-            return make_response(render_template('errors/server_error.html', title='Server error', error=error), 500)
+            return make_response(
+                render_template('errors/server_error.html',
+                                title='Внутренняя ошибка сервера', error=error), 500
+            )
 
     def setup_login_manager(self) -> None:
         """
@@ -240,6 +245,12 @@ class WebApp(Flask):
         @login_required
         def change_info():
             return render_template('desktop/change_info.html')
+
+        @self.route('/menu')
+        @login_required
+        def menu():
+            # TODO: make relationship with get_menu_list, give it to template, and make functions with users
+            return render_template('desktop/menu.html')
 
     def set_api_resources(self) -> None:
         """

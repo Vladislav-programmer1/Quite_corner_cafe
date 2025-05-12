@@ -132,18 +132,22 @@ form {
         transition: transform 0.3s ease;
     }
 
-    .custom-admin-card:hover {
-        transform: translateY(-5px);
-    }
+.custom-admin-card:hover {
+    transform: translateY(-5px);
+}
 
-    .custom-admin-card .card-title {
-        color: #2c3e50;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-    }
+.custom-admin-card .card-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
 
-    .custom-admin-card .card-text {
-        color: #6c757d;
-        line-height: 1.6;
-        min-height: 80px;
-    }
+.custom-admin-card .card-text {
+    color: #6c757d;
+    line-height: 1.6;
+    min-height: 80px;
+}
+
+.container-menu {
+    padding: 20px;
+}

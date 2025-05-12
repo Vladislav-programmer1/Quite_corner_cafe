@@ -1,11 +1,72 @@
 {% extends "desktop/base.html" %}
 {% block content %}
 
-<h3>Lunch</h3>
-{% for menu_item in menu["menu"]["Lunch"] %}
-    <div class="card">
-        <div>{{menu_item["dish_name"]}}</div>
-        <div>{{menu_item["category"]}}</div>
+<h3 class="text-center">Завтрак</h3>
+{% for menu_item in menu["menu"]["Breakfast"] %}
+    <div class="container container-menu">
+    <div class="row">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+        <div class="card h-100" style="background-color: #f8f9fa;">
+            <img src=" {{ url_for('static', filename='img/' + menu_item['image']) }} " class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">menu_item["dish_name"]</h5>
+              <p class="card-text">menu_item["description"]</p>
+              <a href="#" class="btn custom-btn">Добавить</a>
+            </div>
+          </div>
+      </div>
     </div>
+  </div>
+{% endfor %}
+<h3 class="text-center">Обед</h3>
+{% for menu_item in menu["menu"]["Lunch"] %}
+    <div class="container container-menu">
+    <div class="row">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+        <div class="card h-100" style="background-color: #f8f9fa;">
+            <img src=" {{ url_for('static', filename=menu_item['image']) }} " class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">menu_item["dish_name"]</h5>
+              <p class="card-text">menu_item["description"]</p>
+              <a href="#" class="btn custom-btn">Добавить</a>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+<h3 class="text-center">Ужин</h3>
+{% for menu_item in menu["menu"]["Dinner"] %}
+    <div class="container container-menu">
+    <div class="row">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+        <div class="card h-100" style="background-color: #f8f9fa;">
+            <img src=" {{ url_for('static', filename=menu_item['image']) }} " class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">menu_item["dish_name"]</h5>
+              <p class="card-text">menu_item["description"]</p>
+              <a href="#" class="btn custom-btn">Добавить</a>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
+{% endfor %}
+<h3 class="text-center">Напитки</h3>
+{% for menu_item in menu["menu"]["Drinks"] %}
+    <div class="container container-menu">
+    <div class="row">
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+        <div class="card h-100" style="background-color: #f8f9fa;">
+            <img src=" {{ url_for('static', filename=menu_item['image']) }} " class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">menu_item["dish_name"]</h5>
+              <p class="card-text">menu_item["description"]</p>
+              <a href="#" class="btn custom-btn">Добавить</a>
+            </div>
+          </div>
+      </div>
+    </div>
+  </div>
 {% endfor %}
 {% endblock %}

@@ -77,80 +77,102 @@
 {% block content %}
 
 <body class="background-wrapper">
-    <div class="profile-container">
-        <div class="row">
-            <div class="col">
-                <h1 class="profile-heading">Профиль</h1>
+<div class="profile-container">
+    <div class="row">
+        <div class="col">
+            <h1 class="profile-heading">Профиль</h1>
 
-                {% set names_of_properties = ['Логин', 'Имя', 'Номер телефона', 'баллы лояльности', 'Электронная почта', 'Последнее изменение'] %}
+            {% set names_of_properties = ['Имя', 'Фамилия', 'Пол', 'Номер телефона', 'Электронная почта', 'Баллы
+            лояльности', 'Заказ'] %}
+            {% for property in names_of_properties %}
+            <h5 class="profile-property">
+                <strong style="margin-right: 10px;">{{property }}:</strong>
+                {% if current_user.to_dict()[current_user.attributes[loop.index0]]|string() != 'None' %}
+                {{current_user.to_dict()[current_user.attributes[loop.index0]]|string()}}
+                {% else %}
+                -
+                {% endif %}
+            </h5>
+            {% endfor %}
 
-                {% for property in account %}
-                    <h5 class="profile-property">
-                        <strong>{{ names_of_properties[loop.index - 1] }}:</strong> {{ property }}
-                    </h5>
-                {% endfor %}
-
-                <a href="/change_info" class="btn custom-btn mt-3">Изменить</a>
-            </div>
-            <div class="col text-center">
-                <img src="{{ url_for('static', filename='img/icons/user-icon') }}" class="user-icon" alt="User Icon">
-            </div>
+            <a href="/change_info" class="btn custom-btn mt-3">Изменить</a>
+        </div>
+        <div class="col text-center">
+            <img src="{{ url_for('static', filename='img/icons/user-icon.png') }}" class="user-icon" alt="User Icon">
         </div>
     </div>
+</div>
 
-    <div class="cards-wrapper">
-        <div class="row">
-            <div class="col">
-                <div class="custom-profile-card card">
-                    <img src="" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">Заказы</h5>
-                        <p class="card-text">Наше кафе предоставляет большой выбор блюд, чтобы вы могли насладиться изысканными ароматами и почувствовать приятный вкус, созданный для утонченных гурманов и любителей классической кухни</p>
-                        <a href="#" class="btn btn-primary">Сделать заказ</a>
-                    </div>
+<div class="cards-wrapper">
+    <div class="row">
+        <div class="col">
+            <div class="custom-profile-card card">
+                <img src="" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">Заказы</h5>
+                    <p class="card-text">Наше кафе предоставляет большой выбор блюд, чтобы вы могли насладиться
+                        изысканными ароматами и почувствовать приятный вкус, созданный для утонченных гурманов и
+                        любителей классической кухни</p>
+                    <a href="#" class="btn btn-primary">Сделать заказ</a>
                 </div>
             </div>
-            <div class="col">
-                <div class="custom-profile-card card">
-                    <img src="" class="card-img-top" alt="...">
-                    <div class="card-body">
-                        <h5 class="card-title">Программа лояльности</h5>
-                        <p class="card-text">Каждый день мы стараемся дарить вам вкусную еду и широкое меню. Для особо преданных пользователей у нас существует программа лояльности, которая позволяет оплачивать покупки баллами. Почувствуйте себя изысканным гурманом с нашим кафе</p>
-                        <div class="accordion" id="accordionExample">
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button loyalty-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                        <strong>Как заработать баллы лояльности?</strong>
-                                    </button>
-                                </h2>
-                                <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        <strong>Баллы лояльности начисляются за каждую покупку</strong>, сделанную в интернет-версии нашего кафе, а также за покупки, сделанные офлайн в размере 5 процентов от реальной стоимости
-                                    </div>
+        </div>
+        <div class="col">
+            <div class="custom-profile-card card">
+                <img src="" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">Программа лояльности</h5>
+                    <p class="card-text">Каждый день мы стараемся дарить вам вкусную еду и широкое меню. Для особо
+                        преданных пользователей у нас существует программа лояльности, которая позволяет оплачивать
+                        покупки баллами. Почувствуйте себя изысканным гурманом с нашим кафе</p>
+                    <div class="accordion" id="accordionExample">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button loyalty-toggle" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    <strong>Как заработать баллы лояльности?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show"
+                                 data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    <strong>Баллы лояльности начисляются за каждую покупку</strong>, сделанную в
+                                    интернет-версии нашего кафе, а также за покупки, сделанные офлайн в размере 5
+                                    процентов от реальной стоимости
                                 </div>
                             </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed loyalty-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                        <strong>Где можно использовать баллы лояльности?</strong>
-                                    </button>
-                                </h2>
-                                <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        С помощью баллов лояльности <strong>вы можете оплатить до 100 процентов вашей покупки</strong>, а также использовать их для приобретения оригинальной сувенирной продукции
-                                    </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed loyalty-toggle" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false"
+                                        aria-controls="collapseTwo">
+                                    <strong>Где можно использовать баллы лояльности?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse"
+                                 data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    С помощью баллов лояльности <strong>вы можете оплатить до 100 процентов вашей
+                                    покупки</strong>, а также использовать их для приобретения оригинальной сувенирной
+                                    продукции
                                 </div>
                             </div>
-                            <div class="accordion-item">
-                                <h2 class="accordion-header">
-                                    <button class="accordion-button collapsed loyalty-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                        <strong>Какие еще программы есть для меня?</strong>
-                                    </button>
-                                </h2>
-                                <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-                                    <div class="accordion-body">
-                                        Сейчас мы работаем над улучшением нашей системы лояльности. Вскоре будут добавлены <strong>уровни лояльности, фирменный мерч и особые блюда меню</strong> для преданных клиентов
-                                    </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed loyalty-toggle" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false"
+                                        aria-controls="collapseThree">
+                                    <strong>Какие еще программы есть для меня?</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse"
+                                 data-bs-parent="#accordionExample">
+                                <div class="accordion-body">
+                                    Сейчас мы работаем над улучшением нашей системы лояльности. Вскоре будут добавлены
+                                    <strong>уровни лояльности, фирменный мерч и особые блюда меню</strong> для преданных
+                                    клиентов
                                 </div>
                             </div>
                         </div>
@@ -159,5 +181,6 @@
             </div>
         </div>
     </div>
+</div>
 </body>
 {% endblock %}

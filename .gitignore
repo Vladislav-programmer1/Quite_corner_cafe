@@ -3,3 +3,4 @@ venv
 .env
 logs.log
 data.env
+db/database.sqlite

@@ -1,20 +1,44 @@
 {% extends "desktop/base.html" %}
 
 {% block content %}
+<script>
+    function add() {
+        let res = document.getElementById('res');
 
-{% for category in menu["menu"] %}
-    <h3 class="text-center">category</h3>
-    {% for menu_item in menu["menu"][category] %}
+        res.textContent = Number(res.textContent) + Number(this.value);
+        let parent = this.parentElement;
+        let count = parent.querySelector('.counter');
+        count.textContent = Number(count.textContent) + 1
+
+    }
+
+    function remove() {
+        let res = document.getElementById('res');
+        let parent = this.parentElement;
+        let count = parent.querySelector('.counter');
+        if (Number(count.textContent) - 1 >= 0){
+            count.textContent = Number(count.textContent) - 1;
+            res.textContent = Number(res.textContent) - Number(this.value);
+            }
+    }
+</script>
+{% for category, menu_list  in menu["menu"].items() %}
+    <h3 class="text-center">{{category}}</h3>
+
+        {% for menu_item in menu_list %}
         {% if menu_item.id not in cart %}
             <div class="container container-menu">
             <div class="row">
               <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
                 <div class="card h-100" style="background-color: #f8f9fa;">
-                    <img src=" {{ url_for('static', filename='img/' + menu_item['image']) }} " class="card-img-top" alt="...">
+                    <img src="{{ url_for('static', filename=menu_item['src'])}}" class="card-img-top" alt="...">
                     <div class="card-body">
-                      <h5 class="card-title">menu_item["dish_name"]</h5>
-                      <p class="card-text">menu_item["description"]</p>
-                      <a href="#" class="btn custom-btn">Добавить</a>
+                      <h5 class="card-title">{{menu_item["dish_name"]}}</h5>
+                      <p class="card-text">{{menu_item["description"]}}</p>
+                        <p class="card-text">{{menu_item["price"]}} ₽</p>
+                        <button onclick="add.call( this )" value="{{menu_item['price']}}" class="btn custom-btn">Добавить</button>
+                        <button onclick="remove.call( this )" value="{{menu_item['price']}}" class="btn custom-btn">Убрать</button>
+                        <p class="counter">0</p>
                     </div>
                   </div>
               </div>
@@ -23,14 +47,15 @@
         {% else %}
         <!--TODO: how to manage user events of adding, deleting and changing count in cart-->
         <!--Maybe we need JavaScript there-->
+        <!-- Obviously, we need JavaScript there! -->
         {% endif %}
     {% endfor %}
 {% endfor %}
 <nav class="navbar fixed-bottom text-white" style="background-color: #5c3d2e;">
     <div class="container d-flex justify-content-between">
       <h1>Итого:</h1>
-      <h1>{{ full_price }}</h1>
-      <a class="btn success-green-button" href="#">Оплатить</a>
+      <h1><span id="res">0</span><span>₽</span></h1>
+      <a class="btn success-green-button" href="">Оплатить</a>
     </div>
 </nav>
 

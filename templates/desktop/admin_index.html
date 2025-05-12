@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'desktop/base.html' %}
 
 {% block content %}
 
@@ -19,7 +19,7 @@
                                         Добавляйте новые блюда, редактируйте существующие позиции
                                         и обновляйте ассортимент меню
                                     </p>
-                                    <a href="{{ url_for('add_dish') }}" class="btn custom-btn" style="color: #5c3d2e;">
+                                    <a href="/add_dish" class="btn custom-btn" style="color: #5c3d2e;">
                                         Добавить блюдо ➕
                                     </a>
                                 </div>
@@ -34,7 +34,7 @@
                                         Создавайте специальные предложения, настраивайте скидки
                                         и промо-кампании для привлечения клиентов
                                     </p>
-                                    <a href="{{ url_for('add_promotion') }}" class="btn custom-btn" style="color: #5c3d2e;">
+                                    <a href="/add_promotion" class="btn custom-btn" style="color: #5c3d2e;">
                                         Добавить акцию 💰
                                     </a>
                                 </div>

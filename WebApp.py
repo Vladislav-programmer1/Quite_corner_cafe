@@ -90,6 +90,10 @@ class WebApp(Flask):
                 return render_template('stuff/login.html', message='Неверный логин или пароль')
             return render_template('login.html')
 
+        @self.admin_blueprint.route('/admin/base')
+        def admin_base():
+            return render_template('desktop/admin_index.html')
+
     def _set_error_handlers(self) -> None:
         """
         Creates error handlers
@@ -171,8 +175,21 @@ class WebApp(Flask):
 
         @self.route('/menu', methods=['GET'])
         def get_menu():
-            menu = asyncio.run(self.get_menu_list())
-            return render_template('desktop/menu.html', menu=menu)
+            menu_ = asyncio.run(self.get_menu_list())
+            try:
+                cart_ = session['cart']
+            except KeyError:
+                session['cart'] = {}
+                cart_ = session['cart']
+            return render_template('desktop/menu.html', menu=menu_, cart=cart_)
+
+        @self.route('/add_dish', methods=['POST', 'GET'])
+        def add_dish():
+            return render_template('desktop/add_dish.html')
+
+        @self.route('/cart')
+        def cart():
+            return render_template('desktop/cart.html')
 
         @self.route('/login', methods=['POST', 'GET'])
         def authorize():
@@ -239,34 +256,34 @@ class WebApp(Flask):
         def index():
             # type_ = check_agent(request.user_agent)
             css_file = url_for('static', filename='css/style.css')
-            js_file = url_for('static', filename='js/index.js')
             api_key = getenv('JAVASCRIPT_API_KEY')
-            return render_template(f"desktop/index.html", title='Home', css_file=css_file, js_file=js_file,
+            return render_template(f"desktop/index.html", title='Home', css_file=css_file,
                                    API_KEY=api_key)
 
         @self.route('/change_info')
         @login_required
         def change_info():
-            return render_template('desktop/change_info.html')
+            return render_template('desktop/change_info.html', account=[0, 1])
 
-        @self.route('/menu')
-        @login_required
-        def menu():
-            try:
-                cart = session['cart']
-            except KeyError:
-                session['cart'] = {}
-                cart = session['cart']
+        # @self.route('/menu')
+        # @login_required
+        # def menu():
+        #     try:
+        #         cart = session['cart']
+        #     except KeyError:
+        #         session['cart'] = {}
+        #         cart = session['cart']
+        #
+        #     menu_list = self.get_menu_list()
+        #
+        #     # TODO: make relationship with get_menu_list, give it to template, and make functions with users
+        #     return render_template('desktop/menu.html', cart=cart, menu=menu_list)
 
-            menu_list = self.get_menu_list()
+    def setup(self):
 
-            # TODO: make relationship with get_menu_list, give it to template, and make functions with users
-            return render_template('desktop/menu.html', cart=cart, menu=menu_list)
-
-    @staticmethod
-    @app.before_request
-    def make_session_permanent():
-        session.permanent = True
+        @self.before_request
+        def make_session_permanent():
+            session.permanent = True
 
     def set_api_resources(self) -> None:
         """
@@ -286,8 +303,8 @@ class WebApp(Flask):
         Get menu from api
         :return: json response from api
         """
-        async with ClientSession(timeout=ClientTimeout(total=2)) as session:
-            async with session.get(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu') as response:
+        async with ClientSession(timeout=ClientTimeout(total=2)) as session_:
+            async with session_.get(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu') as response:
                 return await response.json()
 
     @staticmethod
@@ -332,6 +349,6 @@ class WebApp(Flask):
         :param expression: bool expression like obj.id == id for selecting an object
         :return: Obj
         """
-        async with create_session() as session:
-            obj = (await session.execute(select(class_).where(expression))).first()
+        async with create_session() as session_:
+            obj = (await session_.execute(select(class_).where(expression))).first()
         return obj[0] if obj is not None else obj

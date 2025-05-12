@@ -49,6 +49,9 @@ class WebApp(Flask):
         self.set_api_resources()
         # create flask_restful.Api and set resources for it
 
+        self.permanent_session_lifetime = timedelta(days=14)
+        # make session permanent for saving users' cart
+
         logging.basicConfig(filename='logs.log',
                             format='%(asctime)s %(levelname)s %(name)s %(message)s',
                             level=logging.WARNING, filemode='w')
@@ -249,8 +252,21 @@ class WebApp(Flask):
         @self.route('/menu')
         @login_required
         def menu():
+            try:
+                cart = session['cart']
+            except KeyError:
+                session['cart'] = {}
+                cart = session['cart']
+
+            menu_list = self.get_menu_list()
+
             # TODO: make relationship with get_menu_list, give it to template, and make functions with users
-            return render_template('desktop/menu.html')
+            return render_template('desktop/menu.html', cart=cart, menu=menu_list)
+
+    @staticmethod
+    @app.before_request
+    def make_session_permanent():
+        session.permanent = True
 
     def set_api_resources(self) -> None:
         """

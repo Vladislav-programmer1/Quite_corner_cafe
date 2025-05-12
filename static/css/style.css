@@ -32,6 +32,16 @@ form {
     color: #ffffff;
 }
 
+.bad-red-button {
+    background-color: rgb(128, 0, 32);
+    color: #ffffff;
+}
+
+.success-green-button {
+    background-color: rgb(14, 78, 24);
+    color: #ffffff;
+}
+
 .cafe-description {
     padding: 40px;
     font-family: 'Arial', sans-serif;

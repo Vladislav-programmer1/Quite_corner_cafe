@@ -1,0 +1,32 @@
+{% extends "desktop/base.html" %}
+
+{% block content %}
+
+{% for name, price, count in items %}
+    <div class="container mt-4">
+        <div class="row align-items-center mb-3 border-bottom pb-2 text-center">
+          <div class="col-6 col-md-4">
+            <h5 class="mb-0">{{ name }}</h5>
+          </div>
+
+          <div class="col-3 col-md-3 text-center">
+            <span class="fw-bold">{{ price }}</span>
+          </div>
+
+          <div class="col-3 col-md-5 text-end">
+            <div class="input-group justify-content-end" style="max-width: 200px;">
+              <button class="btn btn-outline-secondary btn-sm custom-btn" type="button">−</button>
+              <input type="text" class="form-control text-center form-control-sm" value="{{ count }}" style="max-width: 50px;" readonly>
+              <button class="btn btn-outline-secondary btn-sm custom-btn" type="button">+</button>
+            </div>
+          </div>
+        </div>
+      </div>
+{% endfor %}
+<div class="d-flex justify-content-between">
+    <a class="btn bad-red-button" href="#">Очистить все</a>
+    <a class="btn success-green-button" href="#">Оплатить</a>
+    <!--TODO: place where those links will do something and what will be doing there-->
+</div>
+
+{% endblock %}

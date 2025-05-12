@@ -1,72 +1,37 @@
 {% extends "desktop/base.html" %}
+
 {% block content %}
 
-<h3 class="text-center">Завтрак</h3>
-{% for menu_item in menu["menu"]["Breakfast"] %}
-    <div class="container container-menu">
-    <div class="row">
-      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-        <div class="card h-100" style="background-color: #f8f9fa;">
-            <img src=" {{ url_for('static', filename='img/' + menu_item['image']) }} " class="card-img-top" alt="...">
-            <div class="card-body">
-              <h5 class="card-title">menu_item["dish_name"]</h5>
-              <p class="card-text">menu_item["description"]</p>
-              <a href="#" class="btn custom-btn">Добавить</a>
+{% for category in menu["menu"] %}
+    <h3 class="text-center">category</h3>
+    {% for menu_item in menu["menu"][category] %}
+        {% if menu_item.id not in cart %}
+            <div class="container container-menu">
+            <div class="row">
+              <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100" style="background-color: #f8f9fa;">
+                    <img src=" {{ url_for('static', filename='img/' + menu_item['image']) }} " class="card-img-top" alt="...">
+                    <div class="card-body">
+                      <h5 class="card-title">menu_item["dish_name"]</h5>
+                      <p class="card-text">menu_item["description"]</p>
+                      <a href="#" class="btn custom-btn">Добавить</a>
+                    </div>
+                  </div>
+              </div>
             </div>
           </div>
-      </div>
-    </div>
-  </div>
+        {% else %}
+        <!--TODO: how to manage user events of adding, deleting and changing count in cart-->
+        <!--Maybe we need JavaScript there-->
+        {% endif %}
+    {% endfor %}
 {% endfor %}
-<h3 class="text-center">Обед</h3>
-{% for menu_item in menu["menu"]["Lunch"] %}
-    <div class="container container-menu">
-    <div class="row">
-      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-        <div class="card h-100" style="background-color: #f8f9fa;">
-            <img src=" {{ url_for('static', filename=menu_item['image']) }} " class="card-img-top" alt="...">
-            <div class="card-body">
-              <h5 class="card-title">menu_item["dish_name"]</h5>
-              <p class="card-text">menu_item["description"]</p>
-              <a href="#" class="btn custom-btn">Добавить</a>
-            </div>
-          </div>
-      </div>
+<nav class="navbar fixed-bottom text-white" style="background-color: #5c3d2e;">
+    <div class="container d-flex justify-content-between">
+      <h1>Итого:</h1>
+      <h1>{{ full_price }}</h1>
+      <a class="btn success-green-button" href="#">Оплатить</a>
     </div>
-  </div>
-{% endfor %}
-<h3 class="text-center">Ужин</h3>
-{% for menu_item in menu["menu"]["Dinner"] %}
-    <div class="container container-menu">
-    <div class="row">
-      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-        <div class="card h-100" style="background-color: #f8f9fa;">
-            <img src=" {{ url_for('static', filename=menu_item['image']) }} " class="card-img-top" alt="...">
-            <div class="card-body">
-              <h5 class="card-title">menu_item["dish_name"]</h5>
-              <p class="card-text">menu_item["description"]</p>
-              <a href="#" class="btn custom-btn">Добавить</a>
-            </div>
-          </div>
-      </div>
-    </div>
-  </div>
-{% endfor %}
-<h3 class="text-center">Напитки</h3>
-{% for menu_item in menu["menu"]["Drinks"] %}
-    <div class="container container-menu">
-    <div class="row">
-      <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
-        <div class="card h-100" style="background-color: #f8f9fa;">
-            <img src=" {{ url_for('static', filename=menu_item['image']) }} " class="card-img-top" alt="...">
-            <div class="card-body">
-              <h5 class="card-title">menu_item["dish_name"]</h5>
-              <p class="card-text">menu_item["description"]</p>
-              <a href="#" class="btn custom-btn">Добавить</a>
-            </div>
-          </div>
-      </div>
-    </div>
-  </div>
-{% endfor %}
+</nav>
+
 {% endblock %}

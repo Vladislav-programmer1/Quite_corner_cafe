@@ -7,7 +7,6 @@ from flask import jsonify
 from flask_restful import Resource, abort
 from flask_restful.reqparse import RequestParser, Namespace
 from sqlalchemy import select
-
 from data import create_session, Order, Menu, User
 
 

@@ -21,6 +21,7 @@ async def validate_phone_number(phone_number: str) -> bool:
         try:
             async with session.get(server, params=params) as response:
                 match response.status:
+
                     case 200:
                         pass
                     case 503 | 500 | 422:
@@ -31,5 +32,3 @@ async def validate_phone_number(phone_number: str) -> bool:
                 return content.get('valid')
         except TimeoutError:
             return False
-
-

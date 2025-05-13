@@ -13,10 +13,18 @@
             </div>
             <div class="card-body">
                 <h5 class="card-title text-center">Добавить блюдо</h5>
-                <form method="POST" action="/admin/save_dish" enctype="multipart/form-data">
+                <form method="POST" action="" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label for="dish_name" class="form-label">Название блюда</label>
                         <input type="text" class="form-control" id="dish_name" name="dish_name" required>
+                    </div>
+                       <div class="mb-3">
+                        <label for="category" class="form-label">Категория</label>
+                        <input type="text" class="form-control" id="category" name="category">
+                    </div>
+                     <div class="mb-3">
+                        <label for="description" class="form-label">Описание</label>
+                        <input type="text" class="form-control" id="description" name="description">
                     </div>
                     <div class="mb-3">
                         <label for="price" class="form-label">Цена (₽)</label>

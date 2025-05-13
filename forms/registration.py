@@ -8,7 +8,7 @@ from api import validate_email, validate_phone_number
 
 
 def validate_text_values(form: FlaskForm, field: Field):
-    if not str(field.data).isalpha():
+    if field.data and not str(field.data).isalpha():
         if form:
             pass
         raise ValidationError('В данном поле допустимы только буквы')
@@ -24,14 +24,14 @@ def email_validation(form: FlaskForm, field: Field):
 def phone_validation(form: FlaskForm, field: Field):
     if form:
         pass
-    if not asyncio.run(validate_phone_number(field.data)):
+    if field.data and not asyncio.run(validate_phone_number(field.data)):
         raise ValidationError("Некорректный номер телефона")
 
 
 def validate_not_text_values(form: FlaskForm, field: Field):
     if form:
         pass
-    if any(x.isalpha() for x in field.data):
+    if field.data and any(x.isalpha() for x in field.data):
         raise ValidationError("В этом поле недопустимы буквы")
 
 

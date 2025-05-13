@@ -47,9 +47,11 @@ class UserItem(BaseResourceItem):
         return args, res_list
 
     async def validations(self, args: Namespace):
-        if args.get('email') is not None and not await validate_email(args['email']):
+        if args.get('email') and not await validate_email(args['email']):
             return jsonify({'error': 'Invalid email'})
-        if args.get('phone_number') is not None and not await validate_phone_number(args['phone_number']):
+        if args.get('phone_number') and not await validate_phone_number(args['phone_number']):
             return jsonify({'error': 'Invalid phone number'})
-        if any(not args[value].isalpha() for value in ('name', 'surname', 'sex')):
-            return jsonify({'error': 'Name, surname and sex must be strings'})
+        for value in ('name', 'surname', 'sex'):
+            if args[value] is not None:
+                if not args[value].isalpha():
+                    return jsonify({'error': 'Name, surname and sex must be strings'})

@@ -6,15 +6,41 @@
     <div id="carouselExampleInterval" class="carousel slide carousel-fade" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active" data-bs-interval="10000">
-                <div class="card custom-card">
-                    <img src="" class="card-img-top" alt="...">
+                <div class="card text-center shadow-sm rounded-4 bg-light p-3">
+                    <img src=" {{ url_for('static', filename='img/base/schedule.png') }} " class="card-img-top" alt="...">
                     <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                        <a href="/" class="btn custom-btn">Go somewhere</a>
+                    <h5 class="card-title fw-bold text-primary mb-3">📅 Расписание</h5>
+                    <p class="card-text mb-1">
+                        <strong>Будние дни:</strong> с 7:00 до 23:00
+                    </p>
+                    <p class="card-text">
+                        <strong>Выходные и праздники:</strong> с 9:00 до 22:00
+                    </p>
                     </div>
                 </div>
             </div>
+            <div class="carousel-item active" data-bs-interval="10000">
+                <div class="card text-center shadow-sm rounded-4 bg-light p-3">
+                    <img src=" {{ url_for('static', filename='img/base/menu.png') }} " class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold text-primary mb-3">📖 Меню</h5>
+                        <p class="card-text mb-1">
+                        Наше меню — это изысканное сочетание вкуса и стиля: от классических блюд до кулинарных шедевров, которые порадуют даже самых требовательных гурманов.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="carousel-item active" data-bs-interval="10000">
+                <div class="card text-center shadow-sm rounded-4 bg-light p-3">
+                    <img src=" {{ url_for('static', filename='img/base/service.png') }} " class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold text-primary mb-3">🍽️ Обслуживание</h5>
+                        <p class="card-text mb-1">
+                        Наш приоритет - ваше удовольствие. Мы стремимся сделать каждый визит незабываемым, предлагая первоклассное обслуживание персональный подход.
+                        </p>
+                    </div>
+                </div>
+              </div>
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleInterval" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>

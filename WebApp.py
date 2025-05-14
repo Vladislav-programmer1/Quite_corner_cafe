@@ -173,6 +173,146 @@ class WebApp(Flask):
             """
             return asyncio.run(_load_user(user_id))
 
+    def _create_routes(self) -> None:
+        """
+        Creates routes (functions decorated by self.route method)  for the main app
+        :return: None
+        """
+
+        @self.route('/menu', methods=['GET'])
+        def get_menu():
+            menu_ = asyncio.run(self.get_menu_list())
+            try:
+                cart_ = session['cart']
+            except KeyError:
+                session['cart'] = {}
+                cart_ = session['cart']
+            return render_template('desktop/menu.html', menu=menu_, cart=cart_)
+
+        @self.route('/add_dish', methods=['POST', 'GET'])
+        def add_dish() -> str | Response:
+            if request.method == 'POST':
+                name = request.form.get('dish_name')
+                description = request.form.get('description')
+                file = request.files.get('photo')
+                price = request.form.get('price')
+                category = request.form.get('category')
+                img_src = f'{url_for("static", filename=(src := f"img/dishes/img_{self.menu_image_counter}.png"))}'[1:]
+                self.menu_image_counter += 1
+                with open(img_src, 'wb') as img:
+                    img.write(file.read())
+                with requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu', json={
+                    'dish_name': name,
+                    'description': description,
+                    'img_src': src,
+                    'category': category,
+                    'price': price
+                }) as response:
+                    if response.status_code == 200:
+                        return redirect('/admin/base')
+            return render_template('desktop/add_dish.html')
+
+        @self.route('/cart')
+        def cart():
+            return render_template('desktop/cart.html')
+
+        @self.route('/checkout')
+        def checkout():
+            if 'cart' not in session or not session['cart']:
+                return redirect('/cart')
+            return render_template('/desktop/checkout.html')
+
+        @self.route('/login', methods=['POST', 'GET'])
+        def authorize():
+            form = LoginForm()
+            css_file = url_for('static', filename='css/style.css')
+            if form.validate_on_submit():
+                email = form.email.data
+                password = form.password.data
+                check = form.remember_me.data
+                user = asyncio.run(self.get_db_data(User, expression=(User.email == email)))
+                if not user or not user.check_password(password):
+                    return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file,
+                                           message='Неверный логин или пароль')
+                login_user(user, remember=check)
+                return redirect('/account')
+            css_file = url_for('static', filename='css/style.css')
+            return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file)
+
+        @self.route('/signup', methods=['POST', 'GET'])
+        def registrate():
+            form = SignupForm()
+            if form.validate_on_submit():
+                email = form.email.data
+                password = form.password.data
+                name = form.name.data
+                surname = form.surname.data
+                sex = form.sex.data
+                phone_number = form.phone_number.data
+                boolean: Any = (User.email == email)
+
+                user = asyncio.run(self.get_db_data(User, boolean))
+                if user is not None:
+                    return render_template('desktop/signup.html', title='Регистрация',
+                                           message="Пользователь с таким email уже существует", form=form)
+                params = {
+                    "name": name,
+                    "surname": surname,
+                    "sex": sex,
+                    "email": email,
+                    "phone_number": phone_number,
+                    "password": password,
+                }
+                response = requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/users', json=params)
+                if response.status_code == 200 and response.json().get('error') is None:
+                    login_user(asyncio.run(self.get_db_data(User, boolean)))
+                    return redirect('/account')
+                else:
+                    return jsonify(response.json())
+            return render_template('desktop/signup.html', title='Регистрация', form=form)
+
+        @self.route('/account', methods=['GET'])
+        @login_required
+        def account():
+            return render_template('desktop/account.html', title='Личный кабинет')
+
+        @self.route('/logout')
+        def logout():
+            logout_user()
+            return redirect('/')
+
+        @self.route('/', methods=['GET'])
+        def index():
+            # type_ = check_agent(request.user_agent)
+            api_key = getenv('JAVASCRIPT_API_KEY')
+            return render_template(f"desktop/index.html", title='Home',
+                                   API_KEY=api_key)
+
+        @self.route('/change_info', methods=['GET', 'POST'])
+        @login_required
+        def change_info() -> str | Response:
+            """
+            Shows a page, where user can change profile data on post
+            :return: template or redirect to base page
+            """
+            form = ChangeUserDataForm()
+            if form.validate_on_submit():
+                params = {
+                    'name': form.name.data if form.name.data else None,
+                    'surname': form.surname.data if form.surname.data else None,
+                    'phone_number': form.phone_number.data if form.phone_number.data else None,
+                }
+                if form.password.data:
+                    params['password'] = form.password.data
+                with requests.put(f'http://{getenv("server")}:{getenv("port")}/api/v2/users/{current_user.id}',
+                                  json=params) as response:
+                    if response.status_code == 200:
+                        return redirect('/account')
+                    return response.json()
+            return render_template('desktop/change_info.html', form=form)
+
+            # TODO: make relationship with get_menu_list, give it to template, and make functions with users
+
     def _update_session(self) -> None:
 
         @self.route('/update_cart', methods=['POST'])

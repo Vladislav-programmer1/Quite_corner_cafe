@@ -19,7 +19,7 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.user_agent import UserAgent
 
 from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
-from config import set_security_parameters
+from utils import set_security_parameters, level_required
 from data import global_init, create_session, User, Menu, Order
 from forms import LoginForm, SignupForm, ChangeUserDataForm  # Import all packages needed
 
@@ -198,7 +198,7 @@ class WebApp(Flask):
 
         @self.route('/cart')
         def cart():
-            return render_template('desktop/cart.html', csrf_token=self.csrf_token)
+            return render_template('desktop/cart.html')
 
         @self.route('/checkout')
         def checkout():

@@ -7,8 +7,6 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-
-
             },
             body: JSON.stringify({
                 dish_id: dishId,
@@ -33,7 +31,6 @@
         updateCart(dishId, 'remove');
     }
 </script>
-
 {% for category, menu_list  in menu["menu"].items() %}
     <h3 class="text-center">{{category}}</h3>
 
@@ -67,7 +64,7 @@
     <div class="container d-flex justify-content-between">
       <h1>Итого:</h1>
       <h1><span id="res">0</span><span>₽</span></h1>
-      <a class="btn success-green-button" href="">Оплатить</a>
+      <a class="btn success-green-button" href="/cart">Оплатить</a>
     </div>
 </nav>
 

@@ -53,7 +53,7 @@ class WebApp(Flask):
         self.set_api_resources()
         # create flask_restful.Api and set resources for it
 
-        csrf_token = getenv("CSRF_TOKEN")
+        self.csrf_token = getenv("CSRF_TOKEN")
 
         self.permanent_session_lifetime = timedelta(days=14)
         # make session permanent for saving users' cart
@@ -183,6 +183,7 @@ class WebApp(Flask):
         Creates routes (functions decorated by self.route method)  for the main app
         :return: None
         """
+
         @self.route('/policy')
         def get_privacy_policy():
             return render_template('desktop/security.html')
@@ -199,7 +200,7 @@ class WebApp(Flask):
 
         @self.route('/cart')
         def cart():
-            return render_template('desktop/cart.html')
+            return render_template('desktop/cart.html', csrf_token=self.csrf_token)
 
         @self.route('/checkout')
         def checkout():

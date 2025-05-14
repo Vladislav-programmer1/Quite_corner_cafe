@@ -19,9 +19,9 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.user_agent import UserAgent
 
 from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
-from config import set_security_parameters
 from data import global_init, create_session, User, Menu, Order
 from forms import LoginForm, SignupForm, ChangeUserDataForm  # Import all packages needed
+from utlis import set_security_parameters, level_required
 
 
 # from flask_security import roles_required, roles_accepted,
@@ -81,42 +81,40 @@ class WebApp(Flask):
         :return: None
         """
 
-        @self.admin_blueprint.route('/stuff/login', methods=['POST', 'GET'])
-        def admin_login() -> str | Response:
-            """
-            shows page  of login if user has not authorized else redirect him to account page
-            :return: str or Response
-            """
-            form = LoginForm()  # create login form
-            if form.validate_on_submit():  # validation on success
-                expression: Any = (User.email == form.email.data, User.user_level > 1)
-                user: User | None = asyncio.run(self.get_db_data(User, expression))  # get user if exists
-                if user and user.check_password(form.password.data):  # validate data
-                    return redirect('/account')  # Redirect to an account page
-                return render_template('stuff/login.html', message='Неверный логин или пароль')
-            return render_template('login.html')
-
-        @self.admin_blueprint.route('/admin/base')
-        def admin_base():
+        @self.admin_blueprint.route('/admin/base', endpoint='admin')
+        @level_required(3)
+        def base():
             return render_template('desktop/admin_index.html')
+
+        @self.admin_blueprint.route('/add_dish', methods=['POST', 'GET'], endpoint='add_dish')
+        @level_required(3)
+        def add_dish() -> str | Response:
+            if request.method == 'POST':
+                name = request.form.get('dish_name')
+                description = request.form.get('description')
+                file = request.files.get('photo')
+                price = request.form.get('price')
+                category = request.form.get('category')
+                img_src = f'{url_for("static", filename=(src := f"img/dishes/img_{self.menu_image_counter}.png"))}'[1:]
+                self.menu_image_counter += 1
+                with open(img_src, 'wb') as img:
+                    img.write(file.read())
+                with requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu', json={
+                    'dish_name': name,
+                    'description': description,
+                    'img_src': src,
+                    'category': category,
+                    'price': price
+                }) as response:
+                    if response.status_code == 200:
+                        return redirect('/admin/base')
+            return render_template('desktop/add_dish.html')
 
     def _set_error_handlers(self) -> None:
         """
         Creates error handlers
         :return: None
         """
-
-        # __error_docs = \
-        #     "Catch http-error {}\n" \
-        #     "param error: HTTPException which was raised\n" \
-        #     ":return: status-code and error template"
-        #
-        # def set_doc(func: Callable) -> Callable:
-        #     def wrapp(error: HTTPException) -> Response:
-        #         func.__doc__ = __error_docs.format(error.code)
-        #         return func(error)
-        #
-        #     return wrapp
 
         @self.errorhandler(404)
         def not_found(error: HTTPException) -> Response:
@@ -139,6 +137,11 @@ class WebApp(Flask):
                 render_template('errors/unauthorized.html',
                                 title='Вы не авторизованы', error=error), 401
             )
+
+        @self.errorhandler(403)
+        def no_rights(error):
+            return make_response(render_template('errors/no_rights.html', title='Ошибка уровня доступа', error=error),
+                                 403)
 
         @self.errorhandler(500)
         def server_error(error):
@@ -188,29 +191,6 @@ class WebApp(Flask):
                 session['cart'] = {}
                 cart_ = session['cart']
             return render_template('desktop/menu.html', menu=menu_, cart=cart_)
-
-        @self.route('/add_dish', methods=['POST', 'GET'])
-        def add_dish() -> str | Response:
-            if request.method == 'POST':
-                name = request.form.get('dish_name')
-                description = request.form.get('description')
-                file = request.files.get('photo')
-                price = request.form.get('price')
-                category = request.form.get('category')
-                img_src = f'{url_for("static", filename=(src := f"img/dishes/img_{self.menu_image_counter}.png"))}'[1:]
-                self.menu_image_counter += 1
-                with open(img_src, 'wb') as img:
-                    img.write(file.read())
-                with requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu', json={
-                    'dish_name': name,
-                    'description': description,
-                    'img_src': src,
-                    'category': category,
-                    'price': price
-                }) as response:
-                    if response.status_code == 200:
-                        return redirect('/admin/base')
-            return render_template('desktop/add_dish.html')
 
         @self.route('/cart')
         def cart():
@@ -283,7 +263,6 @@ class WebApp(Flask):
 
         @self.route('/', methods=['GET'])
         def index():
-            # type_ = check_agent(request.user_agent)
             api_key = getenv('JAVASCRIPT_API_KEY')
             return render_template(f"desktop/index.html", title='Home',
                                    API_KEY=api_key)

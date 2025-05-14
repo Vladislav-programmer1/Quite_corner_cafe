@@ -7,7 +7,8 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}'
+
+
             },
             body: JSON.stringify({
                 dish_id: dishId,
@@ -32,6 +33,7 @@
         updateCart(dishId, 'remove');
     }
 </script>
+
 {% for category, menu_list  in menu["menu"].items() %}
     <h3 class="text-center">{{category}}</h3>
 

@@ -31,7 +31,7 @@
         updateCart(dishId, 'remove');
     }
 </script>
-{% for category, menu_list  in menu["menu"].items() %}
+{% for category, menu_list in menu.items() %}
     <h3 class="text-center">{{category}}</h3>
 
         {% for menu_item in menu_list %}

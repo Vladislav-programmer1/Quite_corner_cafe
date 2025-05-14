@@ -57,7 +57,9 @@
 {% endfor %}
 <div class="d-flex justify-content-between">
     <a class="btn bad-red-button" href="/menu">Очистить все</a>
-    <a class="btn success-green-button" href="/checkout">Оплатить</a>
+    <form method="POST">
+        <a class="btn success-green-button" href="/checkout">Оплатить</a>
+    </form>
     <!--TODO: place where those links will do something and what will be doing there-->
 </div>
 

@@ -1,0 +1,1 @@
+from .smtp_config import send_email

@@ -21,7 +21,9 @@ from werkzeug.user_agent import UserAgent
 from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
 from utils import set_security_parameters, level_required
 from data import global_init, create_session, User, Menu, Order
-from forms import LoginForm, SignupForm, ChangeUserDataForm  # Import all packages needed
+from forms import LoginForm, SignupForm, ChangeUserDataForm
+from SMTP import send_email
+# Import all packages needed
 
 
 # from flask_security import roles_required, roles_accepted,
@@ -189,6 +191,7 @@ class WebApp(Flask):
         @self.route('/menu', methods=['GET'])
         def get_menu():
             menu_ = asyncio.run(self.get_menu_list())
+            print(menu_)
             try:
                 cart_ = session['cart']
             except KeyError:
@@ -200,10 +203,13 @@ class WebApp(Flask):
         def cart():
             return render_template('desktop/cart.html')
 
-        @self.route('/checkout')
+        @self.route('/checkout', methods=['GET', 'POST'])
         def checkout():
             if 'cart' not in session or not session['cart']:
                 return redirect('/cart')
+
+            print(request.form.json(), "YES")
+            send_email()
             return render_template('/desktop/checkout.html')
 
         @self.route('/login', methods=['POST', 'GET'])

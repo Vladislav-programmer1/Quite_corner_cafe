@@ -4,6 +4,7 @@ import sqlalchemy as sa
 from flask_login import UserMixin
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import relationship
+from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .BaseModel import BaseModelClass
@@ -11,7 +12,7 @@ from .BaseModel import BaseModelClass
 SqlAlchemyBase: DeclarativeMeta = declarative_base()
 
 
-class User(BaseModelClass, SqlAlchemyBase, UserMixin):
+class User(BaseModelClass, SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     name = sa.Column(sa.String)
@@ -26,7 +27,8 @@ class User(BaseModelClass, SqlAlchemyBase, UserMixin):
     modified_datetime = sa.Column(sa.DateTime, default=dt.now, nullable=True)
     user_level = sa.Column(sa.Integer, default=1)
     orders = relationship('Order', lazy='selectin')
-    __attributes = ('name', 'surname', 'sex', 'phone_number', 'email', 'level_of_loyalty', 'order', 'hashed_password')
+    __attributes = (
+        'name', 'surname', 'sex', 'phone_number', 'email', 'level_of_loyalty', 'order', 'hashed_password', 'user_level')
     __action_dict = {'password': ('hashed_password', 'set_password')}
 
     def check_password(self, password: str) -> bool:

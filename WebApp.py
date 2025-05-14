@@ -183,6 +183,9 @@ class WebApp(Flask):
         Creates routes (functions decorated by self.route method)  for the main app
         :return: None
         """
+        @self.route('/policy')
+        def get_privacy_policy():
+            return render_template('desktop/security.html')
 
         @self.route('/menu', methods=['GET'])
         def get_menu():
@@ -314,7 +317,7 @@ class WebApp(Flask):
 
             session.modified = True
 
-            total = sum(int(id) * count for id, count in session['cart'].items())
+            total = sum(int(id_) * count for id_, count in session['cart'].items())
 
             return jsonify({
                 'success': True,

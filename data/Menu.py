@@ -1,10 +1,11 @@
 import sqlalchemy as sa
+from sqlalchemy_serializer import SerializerMixin
 
 from data.user import SqlAlchemyBase
 from .BaseModel import BaseModelClass
 
 
-class Menu(BaseModelClass, SqlAlchemyBase):
+class Menu(BaseModelClass, SqlAlchemyBase, SerializerMixin):
     __tablename__ = 'Menu'
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     dish_name = sa.Column(sa.String, index=True, unique=True)

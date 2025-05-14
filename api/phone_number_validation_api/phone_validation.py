@@ -20,6 +20,7 @@ async def validate_phone_number(phone_number: str) -> bool:
         }
         try:
             async with session.get(server, params=params) as response:
+                print("YSE")
                 match response.status:
 
                     case 200:

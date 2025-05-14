@@ -53,6 +53,8 @@ class WebApp(Flask):
         self.set_api_resources()
         # create flask_restful.Api and set resources for it
 
+        csrf_token = getenv("CSRF_TOKEN")
+
         self.permanent_session_lifetime = timedelta(days=14)
         # make session permanent for saving users' cart
 

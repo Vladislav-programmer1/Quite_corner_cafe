@@ -4,7 +4,6 @@ import sqlalchemy as sa
 from flask_login import UserMixin
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import relationship
-from sqlalchemy_serializer import SerializerMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .BaseModel import BaseModelClass
@@ -12,7 +11,7 @@ from .BaseModel import BaseModelClass
 SqlAlchemyBase: DeclarativeMeta = declarative_base()
 
 
-class User(BaseModelClass, SqlAlchemyBase, UserMixin, SerializerMixin):
+class User(BaseModelClass, SqlAlchemyBase, UserMixin):
     __tablename__ = 'users'
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     name = sa.Column(sa.String)

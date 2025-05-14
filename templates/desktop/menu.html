@@ -2,23 +2,34 @@
 
 {% block content %}
 <script>
-    function add() {
-        let res = document.getElementById('res');
+    function updateCart(dishId, operation) {
+        fetch('/update_cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                dish_id: dishId,
+                operation: operation  // 'add' или 'remove'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Обновляем UI на основе ответа от сервера
+            document.getElementById('res').textContent = data.total + ' ₽';
+            document.querySelector(`.counter[data-dish="${dishId}"]`).textContent = data.count;
+        });
+    }
 
-        res.textContent = Number(res.textContent) + Number(this.value);
-        let parent = this.parentElement;
-        let count = parent.querySelector('.counter');
-        count.textContent = Number(count.textContent) + 1;
+    function add() {
+        const dishId = this.getAttribute('data-dish');
+        updateCart(dishId, 'add');
     }
 
     function remove() {
-        let res = document.getElementById('res');
-        let parent = this.parentElement;
-        let count = parent.querySelector('.counter');
-        if (Number(count.textContent) - 1 >= 0){
-            count.textContent = Number(count.textContent) - 1;
-            res.textContent = Number(res.textContent) - Number(this.value);
-            }
+        const dishId = this.getAttribute('data-dish');
+        updateCart(dishId, 'remove');
     }
 </script>
 {% for category, menu_list  in menu["menu"].items() %}

@@ -19,9 +19,9 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.user_agent import UserAgent
 
 from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
+from config import set_security_parameters
 from data import global_init, create_session, User, Menu, Order
 from forms import LoginForm, SignupForm, ChangeUserDataForm  # Import all packages needed
-from utlis import set_security_parameters, level_required
 
 
 # from flask_security import roles_required, roles_accepted,
@@ -52,8 +52,6 @@ class WebApp(Flask):
         self.api = Api(self)
         self.set_api_resources()
         # create flask_restful.Api and set resources for it
-
-        self.csrf_token = getenv("CSRF_TOKEN")
 
         self.permanent_session_lifetime = timedelta(days=14)
         # make session permanent for saving users' cart

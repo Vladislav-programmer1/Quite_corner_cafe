@@ -2,13 +2,12 @@ from datetime import datetime as dt
 
 from sqlalchemy import Column, Time, Integer, String, Float, Boolean
 from sqlalchemy.orm import relationship
-from sqlalchemy_serializer import SerializerMixin
 
 from .BaseModel import BaseModelClass
 from .user import SqlAlchemyBase
 
 
-class Order(SqlAlchemyBase, SerializerMixin, BaseModelClass):
+class Order(SqlAlchemyBase, BaseModelClass):
     __tablename__ = 'orders'
     id = Column(Integer, primary_key=True, autoincrement=True)
     order_time = Column(Time, default=lambda: dt.now().time())

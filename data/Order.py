@@ -9,7 +9,7 @@ from .user import SqlAlchemyBase
 
 
 class Order(SqlAlchemyBase, BaseModelClass, SerializerMixin):
-    tablename = 'orders'
+    __tablename__ = 'orders'
     id = Column(Integer, primary_key=True, autoincrement=True)
     order_time = Column(Time, default=lambda: dt.now().time())
     target_time = Column(Time)

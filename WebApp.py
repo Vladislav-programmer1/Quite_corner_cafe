@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from datetime import timedelta
+from json import loads
 from os import getenv
 from typing import Any, Type
 
@@ -19,11 +20,9 @@ from werkzeug.exceptions import HTTPException
 from werkzeug.user_agent import UserAgent
 
 from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
-from utils import set_security_parameters, level_required
 from data import global_init, create_session, User, Menu, Order
-from forms import LoginForm, SignupForm, ChangeUserDataForm
-from SMTP import send_email
-# Import all packages needed
+from forms import LoginForm, SignupForm, ChangeUserDataForm  # Import all packages needed
+from utils import set_security_parameters, level_required
 
 
 # from flask_security import roles_required, roles_accepted,
@@ -76,6 +75,7 @@ class WebApp(Flask):
         # register blueprint
 
         self.menu_image_counter = 1
+        self._update_session()
 
     def _create_admin_blueprint_routes(self) -> None:
         """
@@ -191,7 +191,6 @@ class WebApp(Flask):
         @self.route('/menu', methods=['GET'])
         def get_menu():
             menu_ = asyncio.run(self.get_menu_list())
-            print(menu_)
             try:
                 cart_ = session['cart']
             except KeyError:
@@ -203,13 +202,10 @@ class WebApp(Flask):
         def cart():
             return render_template('desktop/cart.html')
 
-        @self.route('/checkout', methods=['GET', 'POST'])
+        @self.route('/checkout')
         def checkout():
             if 'cart' not in session or not session['cart']:
                 return redirect('/cart')
-
-            print(request.form.json(), "YES")
-            send_email()
             return render_template('/desktop/checkout.html')
 
         @self.route('/login', methods=['POST', 'GET'])
@@ -306,28 +302,32 @@ class WebApp(Flask):
 
         @self.route('/update_cart', methods=['POST'])
         def update_cart():
-            data = request.get_json()
-            dish_id = data['dish_id']
-            operation = data['operation']
+            data_ = request.get_json()
+
+            data = data_['data']
+            data = loads(data.replace("'", '"').replace('True', 'true').replace('False', 'false'))
+            operation = data_['operation']
 
             if 'cart' not in session:
                 session['cart'] = {}
 
             if operation == 'add':
-                session['cart'][dish_id] = session['cart'].get(dish_id, 0) + 1
-            elif operation == 'remove' and dish_id in session['cart']:
-                session['cart'][dish_id] = max(0, session['cart'][dish_id] - 1)
-                if session['cart'][dish_id] == 0:
-                    del session['cart'][dish_id]
-
+                session['cart'][data['id']] = {**data,
+                                               'counter': session['cart'].get(data['id'], dict()).get('counter',
+                                                                                                      0) + 1}
+                session['total'] = session.get('total', 0) + session['cart'][data['id']]['price']
+            elif operation == 'remove':
+                session['cart'][data['id']] = {**data,
+                                               'counter': max(0, session['cart'].get(data['id'], dict()).get('counter',
+                                                                                                             0) - 1)}
+                if session.get('total', 0) - session['cart'][data['id']]['price'] > 0:
+                    session['total'] = session.get('total', 0) - session['cart'][data['id']]['price']
             session.modified = True
-
-            total = sum(int(id_) * count for id_, count in session['cart'].items())
 
             return jsonify({
                 'success': True,
-                'count': session['cart'].get(dish_id, 0),
-                'total': total
+                'count': session['cart'].get(data['id'], dict()).get('count', 0),
+                'total': session['total']
             })
 
     def setup(self):

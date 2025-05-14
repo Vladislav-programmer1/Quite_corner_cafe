@@ -7,10 +7,11 @@
     <h1>
         {{ title }}
     </h1>
-    <img src="{{ url_for('static', filename='img/errors/404_error.png') }}">
+    <img src="{{ url_for('static', filename='img/errors/404_error.png') }}" alt="...">
     <h2>
         Сожалеем, но страниц с такими десертами ещё не придумали
     </h2>
+    <a class="btn custom-btn" href="/">На главную</a>
 </div>
 
 {% endblock %}

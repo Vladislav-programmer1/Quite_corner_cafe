@@ -83,7 +83,7 @@
             <h1 class="profile-heading">Профиль</h1>
 
             {% set names_of_properties = ['Имя', 'Фамилия', 'Пол', 'Номер телефона', 'Электронная почта', 'Баллы
-            лояльности', 'Заказ'] %}
+            лояльности'] %}
             {% for property in names_of_properties %}
             <h5 class="profile-property">
                 <strong style="margin-right: 10px;">{{property }}:</strong>
@@ -105,21 +105,9 @@
 
 <div class="cards-wrapper">
     <div class="row">
-        <div class="col">
-            <div class="custom-profile-card card">
-                <img src="" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">Заказы</h5>
-                    <p class="card-text">Наше кафе предоставляет большой выбор блюд, чтобы вы могли насладиться
-                        изысканными ароматами и почувствовать приятный вкус, созданный для утонченных гурманов и
-                        любителей классической кухни</p>
-                    <a href="#" class="btn btn-primary">Сделать заказ</a>
-                </div>
-            </div>
         </div>
         <div class="col">
             <div class="custom-profile-card card">
-                <img src="" class="card-img-top" alt="...">
                 <div class="card-body">
                     <h5 class="card-title">Программа лояльности</h5>
                     <p class="card-text">Каждый день мы стараемся дарить вам вкусную еду и широкое меню. Для особо
@@ -181,6 +169,5 @@
             </div>
         </div>
     </div>
-</div>
 </body>
 {% endblock %}

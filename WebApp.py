@@ -19,6 +19,7 @@ from sqlalchemy import select, Row
 from werkzeug.exceptions import HTTPException
 from werkzeug.user_agent import UserAgent
 
+from SMTP import send_email
 from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
 from data import global_init, create_session, User, Menu, Order
 from forms import LoginForm, SignupForm, ChangeUserDataForm  # Import all packages needed
@@ -192,11 +193,7 @@ class WebApp(Flask):
         @self.route('/menu', methods=['GET'])
         def get_menu():
             menu_ = asyncio.run(self.get_menu_list())
-            try:
-                cart_ = session['cart']
-            except KeyError:
-                session['cart'] = {}
-                cart_ = session['cart']
+            cart_ = session['cart'] = dict()
             return render_template('desktop/menu.html', menu=menu_, cart=cart_)
 
         @self.route('/cart')
@@ -207,6 +204,18 @@ class WebApp(Flask):
         def checkout():
             if 'cart' not in session or not session['cart']:
                 return redirect('/cart')
+            with requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/orders', json={
+                'price': session.get('total', 0),
+                'position_list': ' '.join(
+                    [key for key in session.get('cart').keys() if session['cart'][key][2] is not None]),
+                'count_list': ' '.join(
+                    map(str, [value[2] for value in session.get('cart', dict()).values() if value[2] is not None]))
+            }):
+                pass
+            text = '\n'.join(
+                [f'{value[0]} - {value[1]} ₽ - {value[2]} шт.' for value in session.get('cart', dict()).values() if
+                 value[2] is not None]) + f'\nИтого: {session.get("total")}'
+            send_email(current_user.email, 'Ваш заказ готовится', text=text)
             return render_template('/desktop/checkout.html')
 
         @self.route('/login', methods=['POST', 'GET'])
@@ -314,7 +323,6 @@ class WebApp(Flask):
             session['cart'] = session.get('cart', dict())
             session['cart'][name] = (name, price, counter)
             session['total'] = total
-            print(session)
             return jsonify({'result': 'success'})
 
     def setup(self):

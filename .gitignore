@@ -2,5 +2,4 @@ venv
 .idea
 .env
 logs.log
-data.env
-db/database.sqlite
+

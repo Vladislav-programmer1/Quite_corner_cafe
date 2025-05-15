@@ -75,9 +75,9 @@ class WebApp(Flask):
         self.register_blueprint(self.admin_blueprint)
         # register blueprint
 
-        self.menu_image_counter = 1
         self._update_session()
         self.setup()
+        # session setup
 
     def _create_admin_blueprint_routes(self) -> None:
         """
@@ -88,25 +88,35 @@ class WebApp(Flask):
         @self.admin_blueprint.route('/admin/base', endpoint='admin')
         @level_required(3)
         def base():
+            """
+            Base page for admins
+            :return: page
+            """
             return render_template('desktop/admin_index.html')
 
         @self.admin_blueprint.route('/add_dish', methods=['POST', 'GET'], endpoint='add_dish')
         @level_required(3)
         def add_dish() -> str | Response:
+            """
+            Rotes a page where admin can to add new dish to the menu
+            :return: page
+            """
             if request.method == 'POST':
                 name = request.form.get('dish_name')
                 description = request.form.get('description')
                 file = request.files.get('photo')
                 price = request.form.get('price')
                 category = request.form.get('category')
-                img_src = f'{url_for("static", filename=(src := f"img/dishes/img_{self.menu_image_counter}.png"))}'[1:]
-                self.menu_image_counter += 1
+                with open('current_image_number.txt', 'r+') as txt:
+                    menu_image_counter = int(txt.readline())
+                    txt.write(str(menu_image_counter + 1))
+                img_src = f'{url_for("static", filename=(src := f"img/dishes/img_{menu_image_counter}.png"))}'[1:]
                 with open(img_src, 'wb') as img:
                     img.write(file.read())
                 with requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu', json={
                     'dish_name': name,
                     'description': description,
-                    'img_src': src,
+                    'img_src': src,  # post new menu item to database using rest api
                     'category': category,
                     'price': price
                 }) as response:
@@ -188,20 +198,37 @@ class WebApp(Flask):
 
         @self.route('/policy')
         def get_privacy_policy():
+            """
+            Gives a page with privacy policy of our website
+            :return: file
+            """
             return render_template('desktop/security.html')
 
         @self.route('/menu', methods=['GET'])
         def get_menu():
-            menu_ = asyncio.run(self.get_menu_list())
-            cart_ = session['cart'] = dict()
+            """
+            Rotes menu page
+            :return: page
+            """
+            menu_ = asyncio.run(self.get_menu_list())  # get menu from api
+            cart_ = session['cart'] = dict()  # set cart
             return render_template('desktop/menu.html', menu=menu_, cart=cart_)
 
         @self.route('/cart')
         def cart():
+            """
+            Cart page.
+            :return: page, where user can check his order and confirm it
+            """
             return render_template('desktop/cart.html', session=session)
 
         @self.route('/checkout')
+        @login_required
         def checkout():
+            """
+            Post user order to db and send him a message
+            :return:
+            """
             if 'cart' not in session or not session['cart']:
                 return redirect('/cart')
             with requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/orders', json={
@@ -212,9 +239,7 @@ class WebApp(Flask):
                     map(str, [value[2] for value in session.get('cart', dict()).values() if value[2] is not None]))
             }):
                 pass
-            text = '\n'.join(
-                [f'{value[0]} - {value[1]} ₽ - {value[2]} шт.' for value in session.get('cart', dict()).values() if
-                 value[2] is not None]) + f'\nИтого: {session.get("total")}'
+            text = self.get_email_text()
             send_email(current_user.email, 'Ваш заказ готовится', text=text)
             return render_template('/desktop/checkout.html')
 
@@ -306,12 +331,19 @@ class WebApp(Flask):
                     return response.json()
             return render_template('desktop/change_info.html', form=form)
 
-            # TODO: make relationship with get_menu_list, give it to template, and make functions with users
-
     def _update_session(self) -> None:
+        """
+        Set methods for updating current session
+        :return: None
+        """
 
         @self.route('/update_cart', methods=['POST'])
         def update_cart():
+            """
+            Set order item into cart (into session)
+            For JavaScript only
+            :return: success
+            """
             data_ = request.get_json()
 
             value = loads(data_['value'].replace("'", '"').replace("True", 'true').replace('False', 'false'))
@@ -325,7 +357,19 @@ class WebApp(Flask):
             session['total'] = total
             return jsonify({'result': 'success'})
 
+    @staticmethod
+    def get_email_text():
+        """
+        :return: text for email, generated by data in cart
+        """
+        return '\n'.join(
+            [f'{value[0]} - {value[1]} ₽ - {value[2]} шт.' for value in session.get('cart', dict()).values() if
+             value[2] is not None]) + f'\nИтого: {session.get("total")}'
+
     def setup(self):
+        """
+        Some session setup
+        """
 
         @self.before_request
         def make_session_permanent():

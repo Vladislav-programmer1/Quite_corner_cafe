@@ -19,6 +19,8 @@ async def validate_phone_number(phone_number: str) -> bool:
             'phone': phone_number
         }
         try:
+            if None in [params['api_key'], params['phone']]:
+                raise ValueError()
             async with session.get(server, params=params) as response:
                 print("YSE")
                 match response.status:
@@ -33,3 +35,5 @@ async def validate_phone_number(phone_number: str) -> bool:
                 return content.get('valid')
         except TimeoutError:
             return False
+        except ValueError:
+            return content.get('valid')

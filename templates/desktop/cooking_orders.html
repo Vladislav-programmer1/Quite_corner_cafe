@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="stack-wrapper">
+  <div class="stack-container">
+      {% for item in orders %}
+        <div class="stack-row">
+          <p>
+            <a class="btn custom-btn" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                Посмотреть заказ
+            </a>
+          </p>
+          <div class="collapse" id="collapseExample">
+            <div class="card card-body">
+                {{ item['position_list'] }}
+            </div>
+          </div>
+          <span class="stack-price text-center">{{ item['price'] }} ₽</span>
+          <span class="stack-user text-center">{{ item['name'] }}</span>
+          <a href="/delete_order" class="btn success-green-button">Готов</a>
+        </div>
+  </div>
+</div>
+
+{% endblock %}

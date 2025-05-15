@@ -1,0 +1,69 @@
+{% extends "desktop/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-center align-items-center mt-5 mb-5">
+    <div class="card shadow-sm" style="max-width: 400px; width: 100%;">
+        <div class="text-center" style="margin-top: -30px;">
+            <div style="width: 60px; height: 60px; background-color: #5c3d2e; border-radius: 50%; margin: auto; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ url_for('static', filename='img/icons/user-icon.png') }}" class="user-icon"
+                     style="width: 30px; height: 30px;" alt="Icon">
+            </div>
+        </div>
+        <div class="card-body">
+            <h5 class="card-title text-center">Редактировать профиль</h5>
+            <form method="POST">
+                {{form.hidden_tag()}}
+                <div class="mb-3">
+
+                    {{form.name.label(for="name", class="form-label")}}
+                    {{form.name(type="text", class="form-control", id="name")}}
+                    {% for error in form.name.errors %}
+                    <div role="alert" class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{form.surname.label(for="surname", class="form-label")}}
+                    {{form.surname(type="text", class="form-control", id="surname")}}
+                    {% for error in form.surname.errors %}
+                    <div role="alert" class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{form.phone_number.label(for="phone", class="form-label")}}
+                    {{form.phone_number(type="tel", class="form-control", id="phone")}}
+                    {% for error in form.phone_number.errors %}
+                    <div role="alert" class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="mb-3">
+                    {{form.password.label(for="new_password", class="form-label")}}
+                    {{form.password(type="password", class="form-control", id="new_password")}}
+                    {% for error in form.password.errors %}
+                    <div role="alert" class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {% endfor %}
+                </div>
+                   <div class="mb-3">
+                    {{form.repeat_password.label(for="repeated", class="form-label")}}
+                    {{form.repeat_password(type="password", class="form-control", id="repeated")}}
+                    {% for error in form.repeat_password.errors %}
+                    <div role="alert" class="alert alert-danger">
+                        {{error}}
+                    </div>
+                    {% endfor %}
+                </div>
+                {{form.submit(type="submit", class="btn custom-btn", style="margin-top: 20px;")}}
+            </form>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

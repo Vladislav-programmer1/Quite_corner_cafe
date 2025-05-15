@@ -1,0 +1,82 @@
+{% extends "desktop/base.html" %}
+
+{% block content %}
+<script>
+    function updateCart(value, counter, total) {
+        fetch('/update_cart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                value: value,
+                counter: Number(counter),
+                total: Number(total)
+            })
+            })}
+
+
+    function add() {
+        let parent = this.parentElement;
+        let counter = parent.querySelector('.counter');
+        let total = document.getElementById('res');
+        let value = this.getAttribute('data-dish');
+        counter.textContent = Number(counter.textContent) + 1;
+        total.textContent = Number(total.textContent) + Number(this.value);
+
+        updateCart(value, counter.textContent, total.textContent);
+    }
+
+    function remove() {
+        let parent = this.parentElement;
+        let counter = parent.querySelector('.counter');
+        let total = document.getElementById('res');
+        let value = this.getAttribute('data-dish');
+        if (Number(counter.textContent) - 1 >= 0){
+              counter.textContent = Number(counter.textContent) - 1;
+             total.textContent = Number(total.textContent) - Number(this.value);
+
+        }
+        updateCart(value, counter, total);
+    }
+
+</script>
+{% for category, menu_list in menu['menu'].items() %}
+<h3 class="text-center">{{category}}</h3>
+
+{% for menu_item in menu_list %}
+
+<div class="container container-menu">
+    <div class="row">
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <div class="card h-100" style="background-color: #f8f9fa;">
+                <img src="{{url_for('static', filename=menu_item['img_src'])}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <h5 class="card-title">{{menu_item["dish_name"]}}</h5>
+                    <p class="card-text">{{menu_item["description"]}}</p>
+                    <p class="card-text">{{menu_item["price"]}} ₽</p>
+                    <button onclick="add.call( this )" data-dish="{{menu_item}}" value="{{menu_item['price']}}" class="btn custom-btn">Добавить
+                    </button>
+                    <button onclick="remove.call( this )" data-dish="{{menu_item}}" value="{{menu_item['price']}}" class="btn custom-btn">Убрать
+                    </button>
+                    <p class="counter">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--TODO: how to manage user events of adding, deleting and changing count in cart-->
+<!--Maybe we need JavaScript there-->
+<!-- Obviously, we need JavaScript there! -->
+{% endfor %}
+{% endfor %}
+<nav class="navbar fixed-bottom text-white" style="background-color: #5c3d2e;">
+    <div class="container d-flex justify-content-between">
+        <h1>Итого:</h1>
+        <h1><span id="res">0</span><span>₽</span></h1>
+        <a class="btn success-green-button" href="/cart">Оплатить</a>
+    </div>
+</nav>
+
+{% endblock %}

@@ -1,1 +1,16 @@
 {% extends "errors/BaseError.html" %}
+
+{% block error %}
+
+<link rel="stylesheet" href=" {{ url_for('static', filename='css/errors.css') }} ">
+<div class="d-flex justify-content-center align-items-center flex-column text-center" style="margin-top: 7%">
+    <h1>
+        Не найдено
+    </h1>
+    <img src="{{ url_for('static', filename='img/errors/404_error.png') }}" alt="..." style="width: 20%;">
+    <h2>
+        Сожалеем, но страниц с такими десертами ещё не придумали
+    </h2>
+</div>
+
+{% endblock %}

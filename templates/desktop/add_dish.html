@@ -1,0 +1,44 @@
+{% extends 'desktop/base.html' %}
+
+{% block content %}
+
+<body class="background-wrapper">
+
+    <div class="d-flex justify-content-center align-items-center mt-5 mb-5">
+        <div class="card shadow-sm" style="max-width: 500px; width: 100%;">
+            <div class="text-center" style="margin-top: -30px;">
+                <div style="width: 60px; height: 60px; background-color: #5c3d2e; border-radius: 50%; margin: auto; display: flex; align-items: center; justify-content: center;">
+                    <img src="{{ url_for('static', filename='img/icons/food-icon.png') }}" class="user-icon" style="width: 30px; height: 30px;" alt="Food Icon">
+                </div>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title text-center">Добавить блюдо</h5>
+                <form method="POST" action="" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="dish_name" class="form-label">Название блюда</label>
+                        <input type="text" class="form-control" id="dish_name" name="dish_name" required>
+                    </div>
+                       <div class="mb-3">
+                        <label for="category" class="form-label">Категория</label>
+                        <input type="text" class="form-control" id="category" name="category">
+                    </div>
+                     <div class="mb-3">
+                        <label for="description" class="form-label">Описание</label>
+                        <input type="text" class="form-control" id="description" name="description">
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Цена (₽)</label>
+                        <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="photo" class="form-label">Фотография блюда</label>
+                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="btn custom-btn w-100">Добавить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+{% endblock %}

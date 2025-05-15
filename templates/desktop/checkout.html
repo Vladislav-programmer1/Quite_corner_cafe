@@ -1,0 +1,16 @@
+{% extends 'desktop/base.html' %}
+
+{% block content %}
+
+<div class="d-flex justify-content-center align-items-center flex-column">
+    <h1 class="custom-text-color">
+        Спасибо за заказ!
+    </h1>
+    <img src="{{ url_for('static', filename='img/icons/successful_booking.png') }}">
+    <h2 class="text-center custom-text-color">
+        Му уже начали приготовление, вы сможете забрать ваши блюда через 20 минут
+    </h2>
+    <a class="btn custom-btn" href="/">На главную</a>
+</div>
+
+{% endblock %}

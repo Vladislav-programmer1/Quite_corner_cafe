@@ -1,0 +1,163 @@
+div.bg-primary {
+    height: 100px;
+}
+
+#app {
+    width: 600px;
+    height: 400px;
+}
+
+form {
+    margin-left: 25px;
+}
+
+.form-item {
+    margin-top: 12px;
+}
+
+.content-wrapper {
+    padding: 20px;
+}
+
+.custom-card {
+    width: 50rem;
+}
+
+.card-title {
+    color: #5c3d2e;
+}
+
+.custom-btn {
+    background-color: #5c3d2e;
+    color: #ffffff;
+}
+
+.bad-red-button {
+    background-color: rgb(128, 0, 32);
+    color: #ffffff;
+}
+
+.success-green-button {
+    background-color: rgb(14, 78, 24);
+    color: #ffffff;
+}
+
+.cafe-description {
+    padding: 40px;
+    font-family: 'Arial', sans-serif;
+}
+
+.cafe-text {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.cafe-text h1 {
+    font-size: 36px;
+    color: #5c3d2e;
+    margin-bottom: 20px;
+}
+
+.custom-text-color {
+    color: #5c3d2e;
+}
+
+.cafe-text p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #333333;
+}
+
+.custom-footer {
+    background-color: #f8f9fa;
+    color: #212529;
+    padding: 40px 0;
+    font-family: 'Arial', sans-serif;
+    font-size: 16px;
+}
+
+.custom-navbar {
+    background-color: #5c3d2e;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.background-wrapper {
+    background-color: #f8f9fa;
+}
+
+.profile-container {
+    width: 100%;
+    border: 1px solid #5c3d2e;
+    border-radius: 10px;
+    margin: 2% 0;
+    padding: 2%;
+    box-sizing: border-box;
+}
+
+.profile-heading {
+    margin-bottom: 30px;
+}
+
+.profile-property {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.profile-button {
+    background-color: #5c3d2e;
+    color: #ffffff;
+}
+
+.user-icon {
+    max-width: 100%;
+    height: auto;
+}
+
+.cards-wrapper {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.custom-profile-card {
+    width: 100%;
+    border-color: #5c3d2e;
+    background-color: #f8f9fa;
+}
+
+.loyalty-toggle {
+    color: #5c3d2e;
+    background-color: #ffffff;
+}
+
+.custom-admin-card {
+        background: #f8f9fa;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+.custom-admin-card:hover {
+    transform: translateY(-5px);
+}
+
+.custom-admin-card .card-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.custom-admin-card .card-text {
+    color: #6c757d;
+    line-height: 1.6;
+    min-height: 80px;
+}
+
+.container-menu {
+    padding: 20px;
+}

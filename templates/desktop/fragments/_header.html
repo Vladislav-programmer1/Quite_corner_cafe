@@ -1,0 +1,52 @@
+<header>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary" style="position: fixed; top: 0; left: 0;
+                                                                 right: 0; z-index: 1030;">
+        <!-- class custom-navbar is deactivated because there's a problem on login and signup pages-->
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">Кафе "Тихий уголок"</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/menu">Меню</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Выйти</a>
+                    </li>
+                    <li class="nav-item">
+                        {% if current_user.user_level == 1 %}
+                        <a class="nav-link" style="" href="/account">
+                            Личный кабинет
+                        </a>
+                        {% else %}
+                        <a class="nav-link" style="" href="/admin/base">
+                            Личный кабинет
+                        </a>
+                        {% endif %}
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login" role="button"
+                           aria-expanded="true">
+                            Войти
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" aria-disabled="false" href="/signup">Зарегистрироваться</a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <div class="d-flex">
+                    <img src="{{ url_for('static', filename='img/icons/coffee-cup-icon.png') }}"
+                         alt="" height="50" width="50">
+                </div>
+            </div>
+        </div>
+    </nav>
+</header>

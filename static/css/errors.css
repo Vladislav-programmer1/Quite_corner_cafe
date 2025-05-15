@@ -1,0 +1,14 @@
+h1 {
+    font-size: 36px;
+    color: #5c3d2e;
+    margin-bottom: 20px;
+}
+h2 {
+    font-size: 36px;
+    color: #5c3d2e;
+    margin-bottom: 20px;
+}
+.custom-btn {
+    background-color: #5c3d2e;
+    color: #ffffff;
+}

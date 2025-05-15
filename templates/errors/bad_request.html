@@ -1,1 +1,15 @@
 {% extends "errors/BaseError.html" %}
+
+{% block error %}
+
+<div class="d-flex justify-content-center align-items-center flex-column text-center" style="margin-top: 10%">
+    <h1>
+        Произошла непредвиденная ошибка
+    </h1>
+    <img src="{{ url_for('static', filename='img/errors/400_error.png') }}" alt="..." style="width: 20%;">
+    <h2>
+        Попробуйте повторить ваше действие позже
+    </h2>
+</div>
+
+{% endblock %}

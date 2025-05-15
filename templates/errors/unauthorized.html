@@ -1,1 +1,16 @@
 {% extends "errors/BaseError.html" %}
+
+{% block error %}
+
+<link rel="stylesheet" href=" {{ url_for('static', filename='css/errors.css') }} ">
+<div class="d-flex justify-content-center align-items-center flex-column text-center" style="margin-top: 10%">
+    <h1>
+        Упс, похоже вы не авторизованы
+    </h1>
+    <img src="{{ url_for('static', filename='img/errors/401_error.png') }}" alt="..." style="width: 20%;">
+    <h2>
+        Теплый ужин уже ждет вас, но для начала нам надо понять, что это именно вы
+    </h2>
+</div>
+
+{% endblock %}

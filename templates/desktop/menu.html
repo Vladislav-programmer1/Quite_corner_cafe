@@ -2,43 +2,50 @@
 
 {% block content %}
 <script>
-    function updateCart(data, operation) {
+    function updateCart(value, counter, total) {
         fetch('/update_cart', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                data: data,
-                operation: operation  // 'add' или 'remove'
+                value: value,
+                counter: Number(counter),
+                total: Number(total)
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Обновляем UI на основе ответа от сервера
-            document.getElementById('res').textContent = data.total + ' ₽';
-            let parent = this.parentElement;
-            let counter = parent.querySelector('.counter');
-            counter.textContent= data.count;
-        });
-    }
+            })}
+
 
     function add() {
-        const data = this.getAttribute('data-dish');
-        updateCart(data, 'add');
+        let parent = this.parentElement;
+        let counter = parent.querySelector('.counter');
+        let total = document.getElementById('res');
+        let value = this.getAttribute('data-dish');
+        counter.textContent = Number(counter.textContent) + 1;
+        total.textContent = Number(total.textContent) + Number(this.value);
+
+        updateCart(value, counter.textContent, total.textContent);
     }
 
     function remove() {
-        const data = this.getAttribute('data-dish');
-        updateCart(data, 'remove');
+        let parent = this.parentElement;
+        let counter = parent.querySelector('.counter');
+        let total = document.getElementById('res');
+        let value = this.getAttribute('data-dish');
+        if (Number(counter.textContent) - 1 >= 0){
+              counter.textContent = Number(counter.textContent) - 1;
+             total.textContent = Number(total.textContent) - Number(this.value);
+
+        }
+        updateCart(value, counter, total);
     }
 
 </script>
-{% for category, menu_list in menu.items() %}
+{% for category, menu_list in menu['menu'].items() %}
 <h3 class="text-center">{{category}}</h3>
 
 {% for menu_item in menu_list %}
-{% if menu_item.id not in cart %}
+
 <div class="container container-menu">
     <div class="row">
         <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
@@ -48,9 +55,9 @@
                     <h5 class="card-title">{{menu_item["dish_name"]}}</h5>
                     <p class="card-text">{{menu_item["description"]}}</p>
                     <p class="card-text">{{menu_item["price"]}} ₽</p>
-                    <button onclick="add.call( this )" data-dish="{{menu_item}}" class="btn custom-btn">Добавить
+                    <button onclick="add.call( this )" data-dish="{{menu_item}}" value="{{menu_item['price']}}" class="btn custom-btn">Добавить
                     </button>
-                    <button onclick="remove.call( this )" data-dish="{{menu_item}}" class="btn custom-btn">Убрать
+                    <button onclick="remove.call( this )" data-dish="{{menu_item}}" value="{{menu_item['price']}}" class="btn custom-btn">Убрать
                     </button>
                     <p class="counter">0</p>
                 </div>
@@ -58,11 +65,10 @@
         </div>
     </div>
 </div>
-{% else %}
+
 <!--TODO: how to manage user events of adding, deleting and changing count in cart-->
 <!--Maybe we need JavaScript there-->
 <!-- Obviously, we need JavaScript there! -->
-{% endif %}
 {% endfor %}
 {% endfor %}
 <nav class="navbar fixed-bottom text-white" style="background-color: #5c3d2e;">

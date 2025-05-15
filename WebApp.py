@@ -76,6 +76,7 @@ class WebApp(Flask):
 
         self.menu_image_counter = 1
         self._update_session()
+        self.setup()
 
     def _create_admin_blueprint_routes(self) -> None:
         """
@@ -200,7 +201,7 @@ class WebApp(Flask):
 
         @self.route('/cart')
         def cart():
-            return render_template('desktop/cart.html')
+            return render_template('desktop/cart.html', session=session)
 
         @self.route('/checkout')
         def checkout():
@@ -304,31 +305,17 @@ class WebApp(Flask):
         def update_cart():
             data_ = request.get_json()
 
-            data = data_['data']
-            data = loads(data.replace("'", '"').replace('True', 'true').replace('False', 'false'))
-            operation = data_['operation']
+            value = loads(data_['value'].replace("'", '"').replace("True", 'true').replace('False', 'false'))
 
-            if 'cart' not in session:
-                session['cart'] = {}
-
-            if operation == 'add':
-                session['cart'][data['id']] = {**data,
-                                               'counter': session['cart'].get(data['id'], dict()).get('counter',
-                                                                                                      0) + 1}
-                session['total'] = session.get('total', 0) + session['cart'][data['id']]['price']
-            elif operation == 'remove':
-                session['cart'][data['id']] = {**data,
-                                               'counter': max(0, session['cart'].get(data['id'], dict()).get('counter',
-                                                                                                             0) - 1)}
-                if session.get('total', 0) - session['cart'][data['id']]['price'] > 0:
-                    session['total'] = session.get('total', 0) - session['cart'][data['id']]['price']
-            session.modified = True
-
-            return jsonify({
-                'success': True,
-                'count': session['cart'].get(data['id'], dict()).get('count', 0),
-                'total': session['total']
-            })
+            name = value['dish_name']
+            price = value['price']
+            total = data_['total']
+            counter = data_['counter']
+            session['cart'] = session.get('cart', dict())
+            session['cart'][name] = (name, price, counter)
+            session['total'] = total
+            print(session)
+            return jsonify({'result': 'success'})
 
     def setup(self):
 

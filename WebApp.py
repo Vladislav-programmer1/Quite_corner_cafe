@@ -107,8 +107,9 @@ class WebApp(Flask):
                 file = request.files.get('photo')
                 price = request.form.get('price')
                 category = request.form.get('category')
-                with open('current_image_number.txt', 'r+') as txt:
+                with open('current_image_number.txt', 'r') as txt:
                     menu_image_counter = int(txt.readline())
+                with open('current_image_number.txt', 'w') as txt:
                     txt.write(str(menu_image_counter + 1))
                 img_src = f'{url_for("static", filename=(src := f"img/dishes/img_{menu_image_counter}.png"))}'[1:]
                 with open(img_src, 'wb') as img:
@@ -321,6 +322,7 @@ class WebApp(Flask):
                     'name': form.name.data if form.name.data else None,
                     'surname': form.surname.data if form.surname.data else None,
                     'phone_number': form.phone_number.data if form.phone_number.data else None,
+                    'user_level': current_user.user_level,
                 }
                 if form.password.data:
                     params['password'] = form.password.data

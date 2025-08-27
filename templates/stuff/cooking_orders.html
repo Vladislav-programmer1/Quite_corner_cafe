@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<script src="{{url_for('static', filename='js/change_order_status.js')}}">
+</script>
+<div class="stack-wrapper">
+  <div class="stack-container">
+      {% for order in orders %}
+          <p>
+            <a class="btn custom-btn" data-bs-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+                Посмотреть заказ
+            </a>
+          </p>
+          <div class="collapse" id="collapseExample">
+            <div class="card card-body">
+                <div>{{order['yet_to_cook']}}</div>
+                {% for el in order['correct_items_list'] %}
+                <div>
+                    {{el[1]}} - {{el[0]}}
+
+
+                </div>
+                {% endfor %}
+            </div>
+          </div>
+          <span class="stack-price text-center">{{ order['price'] }} ₽</span>
+
+          <button onclick="setOrderAsReady.click(this, {{order['id']}})" class="btn success-green-button">Готов</button>
+
+      {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

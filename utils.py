@@ -20,7 +20,7 @@ def level_required(role: int):
         @login_required
         def wrap():
             level = current_user.user_level
-            if level == role:
+            if level >= role:
                 return func()
             abort(403)
 

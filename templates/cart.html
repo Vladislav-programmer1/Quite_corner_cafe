@@ -1,4 +1,4 @@
-{% extends "desktop/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 
@@ -32,37 +32,50 @@
         const dishId = this.getAttribute('data-dish');
         updateCart(dishId, 'remove');
     }
+
 </script>
+<div class="container mt-4">
+    <div class="row align-items-center mb-3 border-bottom pb-2 text-center">
+        <div class="col-6 col-md-4">
+            <h3 class="mb-0">Название</h3>
+        </div>
 
+        <div class="col-6 col-md-4 text-center">
+            <h3 class="fw-bold">Цена</h3>
+        </div>
+
+        <div class="col-6 col-md-4 text-end">
+            <div class="input-group justify-content-end" style="max-width: 200px;">
+                <h3>Количество</h3>
+            </div>
+        </div>
+    </div>
+</div>
 {% for value in session["cart"].values() %}
-    {% if value[2] %}
-    <div class="container mt-4">
-        <div class="row align-items-center mb-3 border-bottom pb-2 text-center">
-          <div class="col-6 col-md-4">
+{% if value[2] %}
+<div class="container mt-4">
+    <div class="row align-items-center mb-3 border-bottom pb-2 text-center">
+        <div class="col-6 col-md-4">
             <h5 class="mb-0">{{ value[0] }}</h5>
-          </div>
+        </div>
 
-          <div class="col-3 col-md-3 text-center">
+        <div class="col-6 col-md-4 text-center">
             <span class="fw-bold" id="res">{{ value[1] }}</span>
-          </div>
+        </div>
 
-          <div class="col-3 col-md-5 text-end">
+        <div class="col-6 col-md-4 text-end">
             <div class="input-group justify-content-end" style="max-width: 200px;">
                 <div>{{value[2]}}</div>
-<!--              <button onclick="remove.call( this )" value="{{value['price']}}" class="btn btn-outline-secondary btn-sm custom-btn" type="button">-</button>-->
-<!--              <input type="text" class="form-control text-center form-control-sm" value="{{ value['price'] }}" style="max-width: 50px;" readonly>-->
-<!--              <button onclick="add.call( this )" value="{{value['price']}}" class="btn btn-outline-secondary btn-sm custom-btn" type="button">+</button>-->
             </div>
-          </div>
         </div>
-      </div>
-    {% endif %}
+    </div>
+</div>
+{% endif %}
 {% endfor %}
-<div class="d-flex justify-content-between">
+<nav class="navbar fixed-bottom bg-body-tertiary">
     <a class="btn bad-red-button" href="/menu">Очистить все</a>
     <a class="btn success-green-button" href="/checkout">Оплатить</a>
-    <div>Итого: {{session["total"]}}</div>
-    <!--TODO: place where those links will do something and what will be doing there-->
-</div>
+    <div style="margin-right: 15px;">Итого: {{session["total"]}}₽</div>
+</nav>
 
 {% endblock %}

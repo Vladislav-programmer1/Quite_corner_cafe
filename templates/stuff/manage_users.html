@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<script src="{{url_for('static', filename='js/del_user.js')}}"></script>
+<script src="{{url_for('static', filename='js/update_user.js')}}"></script>
+<style>
+    button {
+        width: 60%;
+        height: 35px;
+    }
+</style>
+<table class="table" style="margin: 15px;">
+    <thead>
+    <tr>
+        <th scope="col">Id</th>
+        <th scope="col">Имя</th>
+        <th scope="col">Фамилия</th>
+        <th scope="col">Пол</th>
+        <th scope="col">E-mail</th>
+        <th scope="col">Номер телефона</th>
+        <th scope="col">Права доступа</th>
+        <th scope="col"></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for user in users %}
+    <tr>
+        {% for item in user %}
+        <th scope="col">{{item}}</th>
+        {% endfor %}
+        <th scope="col">
+            <div>
+                <button class="btn btn-secondary" type="button" value="{{user[0]}}" onclick="del.call(this, {{current_user.id}})"
+                        style="margin-bottom: 15px;">
+                    Удалить
+                </button>
+                <br>
+                <button class="btn btn-secondary" type="button" onclick="update.call(this)" value="{{user[0]}}">Изменить</button>
+            </div>
+        </th>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<div id="errors" class="fixed-bottom"></div>
+{% endblock %}

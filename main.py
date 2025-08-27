@@ -10,3 +10,7 @@ app = WebApp(__name__)
 
 if __name__ == '__main__':
     app.run(port=getenv('port'), host=getenv('server'))
+    # TODO: adding a new stuff by admin
+    # TODO: managing orders by stuff
+    # TODO: hosting
+    # FIXME: view.

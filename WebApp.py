@@ -6,27 +6,23 @@ from os import getenv
 from typing import Any, Type
 
 import requests
-from aiohttp import ClientSession, ClientTimeout
 from dotenv import load_dotenv
 from flask import (
     Flask, url_for, make_response,
     render_template, redirect, jsonify,
-    Blueprint, Response, session, request
+    Response, session, request
 )
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api
 from sqlalchemy import select, Row
 from werkzeug.exceptions import HTTPException
-from werkzeug.user_agent import UserAgent
 
+from ExtraClasses import ApiManager, BlueprintManager
 from SMTP import send_email
-from api import ListUsers, MenuList, MenuItem, UserItem, OrderItem, OrderList
 from data import global_init, create_session, User, Menu, Order
 from forms import LoginForm, SignupForm, ChangeUserDataForm  # Import all packages needed
-from utils import set_security_parameters, level_required
+from utils import set_security_parameters
 
-
-# from flask_security import roles_required, roles_accepted,
 
 class WebApp(Flask):
     """
@@ -52,11 +48,8 @@ class WebApp(Flask):
         # set security params of the app
 
         self.api = Api(self)
-        self.set_api_resources()
+        self.ApiManager = ApiManager(self)
         # create flask_restful.Api and set resources for it
-
-        self.permanent_session_lifetime = timedelta(days=14)
-        # make session permanent for saving users' cart
 
         logging.basicConfig(filename='logs.log',
                             format='%(asctime)s %(levelname)s %(name)s %(message)s',
@@ -64,12 +57,12 @@ class WebApp(Flask):
         self.base_logger = logging.getLogger(__name__)
         # set logger and settings for him
 
-        self.admin_blueprint = Blueprint('admin', __name__, template_folder='templates/stuff')
+        self.admin_blueprint = BlueprintManager(self.ApiManager, 'admin', __name__,
+                                                template_folder='templates/stuff')
         # create flask.Blueprint for stuff pages of the app
 
         self._create_routes()
         self._set_error_handlers()
-        self._create_admin_blueprint_routes()
         # set all routes needed
 
         self.register_blueprint(self.admin_blueprint)
@@ -78,52 +71,6 @@ class WebApp(Flask):
         self._update_session()
         self.setup()
         # session setup
-
-    def _create_admin_blueprint_routes(self) -> None:
-        """
-        Creates rotes for admin blueprint
-        :return: None
-        """
-
-        @self.admin_blueprint.route('/admin/base', endpoint='admin')
-        @level_required(3)
-        def base():
-            """
-            Base page for admins
-            :return: page
-            """
-            return render_template('desktop/admin_index.html')
-
-        @self.admin_blueprint.route('/add_dish', methods=['POST', 'GET'], endpoint='add_dish')
-        @level_required(3)
-        def add_dish() -> str | Response:
-            """
-            Rotes a page where admin can to add new dish to the menu
-            :return: page
-            """
-            if request.method == 'POST':
-                name = request.form.get('dish_name')
-                description = request.form.get('description')
-                file = request.files.get('photo')
-                price = request.form.get('price')
-                category = request.form.get('category')
-                with open('current_image_number.txt', 'r') as txt:
-                    menu_image_counter = int(txt.readline())
-                with open('current_image_number.txt', 'w') as txt:
-                    txt.write(str(menu_image_counter + 1))
-                img_src = f'{url_for("static", filename=(src := f"img/dishes/img_{menu_image_counter}.png"))}'[1:]
-                with open(img_src, 'wb') as img:
-                    img.write(file.read())
-                with requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu', json={
-                    'dish_name': name,
-                    'description': description,
-                    'img_src': src,  # post new menu item to database using rest api
-                    'category': category,
-                    'price': price
-                }) as response:
-                    if response.status_code == 200:
-                        return redirect('/admin/base')
-            return render_template('desktop/add_dish.html')
 
     def _set_error_handlers(self) -> None:
         """
@@ -203,7 +150,7 @@ class WebApp(Flask):
             Gives a page with privacy policy of our website
             :return: file
             """
-            return render_template('desktop/security.html')
+            return render_template('security.html')
 
         @self.route('/menu', methods=['GET'])
         def get_menu():
@@ -211,17 +158,19 @@ class WebApp(Flask):
             Rotes menu page
             :return: page
             """
-            menu_ = asyncio.run(self.get_menu_list())  # get menu from api
+            menu_ = asyncio.run(self.ApiManager.get_api_list('menu'))  # get menu from api
             cart_ = session['cart'] = dict()  # set cart
-            return render_template('desktop/menu.html', menu=menu_, cart=cart_)
+            return render_template('menu.html', menu=menu_, cart=cart_, title='Меню')
 
         @self.route('/cart')
-        def cart():
+        def cart() -> str | Response:
             """
             Cart page.
             :return: page, where user can check his order and confirm it
             """
-            return render_template('desktop/cart.html', session=session)
+            if session.get('cart'):
+                return render_template('cart.html', session=session, title='Корзина')
+            return redirect('/menu')
 
         @self.route('/checkout')
         @login_required
@@ -242,7 +191,7 @@ class WebApp(Flask):
                 pass
             text = self.get_email_text()
             send_email(current_user.email, 'Ваш заказ готовится', text=text)
-            return render_template('/desktop/checkout.html')
+            return render_template('checkout.html', title='Заказ готовится')
 
         @self.route('/login', methods=['POST', 'GET'])
         def authorize():
@@ -254,12 +203,12 @@ class WebApp(Flask):
                 check = form.remember_me.data
                 user = asyncio.run(self.get_db_data(User, expression=(User.email == email)))
                 if not user or not user.check_password(password):
-                    return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file,
+                    return render_template('login.html', title='Авторизация', form=form, css_file=css_file,
                                            message='Неверный логин или пароль')
                 login_user(user, remember=check)
                 return redirect('/account')
             css_file = url_for('static', filename='css/style.css')
-            return render_template('desktop/login.html', title='Авторизация', form=form, css_file=css_file)
+            return render_template('login.html', title='Авторизация', form=form, css_file=css_file)
 
         @self.route('/signup', methods=['POST', 'GET'])
         def registrate():
@@ -275,7 +224,7 @@ class WebApp(Flask):
 
                 user = asyncio.run(self.get_db_data(User, boolean))
                 if user is not None:
-                    return render_template('desktop/signup.html', title='Регистрация',
+                    return render_template('signup.html', title='Регистрация',
                                            message="Пользователь с таким email уже существует", form=form)
                 params = {
                     "name": name,
@@ -285,18 +234,17 @@ class WebApp(Flask):
                     "phone_number": phone_number,
                     "password": password,
                 }
-                response = requests.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/users', json=params)
-                if response.status_code == 200 and response.json().get('error') is None:
+                response = asyncio.run(
+                    self.ApiManager.post('users', data=params))
+                if response:
                     login_user(asyncio.run(self.get_db_data(User, boolean)))
                     return redirect('/account')
-                else:
-                    return jsonify(response.json())
-            return render_template('desktop/signup.html', title='Регистрация', form=form)
+            return render_template('signup.html', title='Регистрация', form=form)
 
         @self.route('/account', methods=['GET'])
         @login_required
         def account():
-            return render_template('desktop/account.html', title='Личный кабинет')
+            return render_template('account.html', title='Личный кабинет')
 
         @self.route('/logout')
         def logout():
@@ -306,7 +254,7 @@ class WebApp(Flask):
         @self.route('/', methods=['GET'])
         def index():
             api_key = getenv('JAVASCRIPT_API_KEY')
-            return render_template(f"desktop/index.html", title='Home',
+            return render_template(f"index.html", title='Home',
                                    API_KEY=api_key)
 
         @self.route('/change_info', methods=['GET', 'POST'])
@@ -326,12 +274,12 @@ class WebApp(Flask):
                 }
                 if form.password.data:
                     params['password'] = form.password.data
-                with requests.put(f'http://{getenv("server")}:{getenv("port")}/api/v2/users/{current_user.id}',
-                                  json=params) as response:
-                    if response.status_code == 200:
-                        return redirect('/account')
-                    return response.json()
-            return render_template('desktop/change_info.html', form=form)
+                if response := asyncio.run(self.ApiManager.put('users', current_user.id, data=params)):
+                    return redirect('/account')
+                return render_template('change_info.html', form=form, title='Изменение данных',
+                                       message='Ошибка при попытке изменения данных, попробуйте снова...')
+
+            return render_template('change_info.html', form=form, title='Изменение данных')
 
     def _update_session(self) -> None:
         """
@@ -340,27 +288,29 @@ class WebApp(Flask):
         """
 
         @self.route('/update_cart', methods=['POST'])
-        def update_cart():
+        def update_cart() -> Response | tuple[bool, Exception]:
             """
             Set order item into cart (into session)
             For JavaScript only
             :return: success
             """
-            data_ = request.get_json()
+            try:
+                data_ = request.get_json()
+                value = loads(data_['value'].replace("'", '"').replace("True", 'true').replace('False', 'false'))
 
-            value = loads(data_['value'].replace("'", '"').replace("True", 'true').replace('False', 'false'))
-
-            name = value['dish_name']
-            price = value['price']
-            total = data_['total']
-            counter = data_['counter']
-            session['cart'] = session.get('cart', dict())
-            session['cart'][name] = (name, price, counter)
-            session['total'] = total
+                name = value['dish_name']
+                price = value['price']
+                total = data_['total']
+                counter = data_['counter']
+                session['cart'] = session.get('cart', dict())
+                session['cart'][name] = (name, price, counter)
+                session['total'] = total
+            except Exception as e:
+                return False, e
             return jsonify({'result': 'success'})
 
     @staticmethod
-    def get_email_text():
+    def get_email_text() -> str:
         """
         :return: text for email, generated by data in cart
         """
@@ -376,43 +326,6 @@ class WebApp(Flask):
         @self.before_request
         def make_session_permanent():
             session.permanent = True
-
-    def set_api_resources(self) -> None:
-        """
-        Add resources needed to the Api
-        :return: None
-        """
-        self.api.add_resource(ListUsers, '/api/v2/users')
-        self.api.add_resource(MenuList, '/api/v2/menu')
-        self.api.add_resource(MenuItem, '/api/v2/menu/<int:id_>')
-        self.api.add_resource(UserItem, '/api/v2/users/<int:id_>')
-        self.api.add_resource(OrderList, '/api/v2/orders')
-        self.api.add_resource(OrderItem, '/api/v2/orders/<int:id_>')
-
-    @staticmethod
-    async def get_menu_list() -> dict:
-        """
-        Get menu from api
-        :return: json response from api
-        """
-        async with ClientSession(timeout=ClientTimeout(total=2)) as session_:
-            async with session_.get(f'http://{getenv("server")}:{getenv("port")}/api/v2/menu') as response:
-                return await response.json()
-
-    @staticmethod
-    def check_agent(agent: UserAgent) -> str:
-        # TODO: this method
-
-        """
-        check user agent and return type of device (desktop or mobile).
-        :param agent: flask.request.user-agent
-        :return: Optional
-        """
-        # if 'Apple' in agent.string or 'Android' in agent.string:
-        #     type_ = 'mobile'
-        # else:
-        #     type_ = 'desktop'
-        return 'desktop' if agent else 'mobile'
 
     def run(
             self,

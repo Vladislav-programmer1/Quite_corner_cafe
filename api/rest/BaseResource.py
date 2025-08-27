@@ -3,14 +3,20 @@ import sqlite3
 from typing import Any, Optional, Type, Callable
 
 import sqlalchemy
-from flask import jsonify
+from flask import jsonify, Response
 from flask_restful import Resource, abort
 from flask_restful.reqparse import RequestParser, Namespace
 from sqlalchemy import select
+
 from data import create_session, Order, Menu, User
 
 
 class BaseResourceList(Resource):
+    """
+    Base class for restful-api, providing get and post requests handlers.
+    Works with list data.
+    """
+
     def __init__(self, post_parser: RequestParser, base: Optional[Type[User | Menu | Order]], name: str,
                  only: tuple[str, ...] = tuple()):
         self.post_parser = post_parser
@@ -18,10 +24,18 @@ class BaseResourceList(Resource):
         self.only = only
         self.name = name
 
-    def get(self):
+    def get(self) -> Response:
+        """
+        handler for get request
+        :return: Json response
+        """
         return asyncio.run(self._get())
 
     async def _get(self):
+        """
+
+        :return:
+        """
         async with create_session() as session:
             data = map(lambda x: x[0], (await session.execute(select(self.base_class))).all())
         return jsonify({self.name: [item.to_dict(
@@ -32,11 +46,21 @@ class BaseResourceList(Resource):
     def post(self):
         return asyncio.run(self._post())
 
-    async def validations(self, args):
+    async def validations(self, args: Namespace):
+        """
+        Valid check
+        :param args: data, got by parser, that have to get valid check
+        :return: Response with error or None if everything is ok
+        """
         ...
 
     @staticmethod
     def refactor_args(args: Namespace) -> tuple[Namespace, list]:
+        """
+
+        :param args:
+        :return:
+        """
         return args, list()
 
     async def _post(self):
@@ -56,11 +80,6 @@ class BaseResourceList(Resource):
 
                 return jsonify({'error': 'This object has already exists'})
         return jsonify({'status': 'ok'})
-
-    # @staticmethod
-    # def set_values(base, args):
-    #     for key, value in args.items():
-    #         setattr(base, key, value)
 
 
 class BaseResourceItem(Resource):

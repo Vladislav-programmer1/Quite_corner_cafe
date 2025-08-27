@@ -1,4 +1,4 @@
-{% extends "desktop/base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
 <div class="d-flex justify-content-center align-items-center mt-5 mb-5">
@@ -16,7 +16,7 @@
                 <div class="mb-3">
 
                     {{form.name.label(for="name", class="form-label")}}
-                    {{form.name(type="text", class="form-control", id="name")}}
+                    {{form.name(type="text", class="form-control", id="name", value=current_user.name)}}
                     {% for error in form.name.errors %}
                     <div role="alert" class="alert alert-danger">
                         {{error}}
@@ -25,7 +25,7 @@
                 </div>
                 <div class="mb-3">
                     {{form.surname.label(for="surname", class="form-label")}}
-                    {{form.surname(type="text", class="form-control", id="surname")}}
+                    {{form.surname(type="text", class="form-control", id="surname", value=current_user.surname)}}
                     {% for error in form.surname.errors %}
                     <div role="alert" class="alert alert-danger">
                         {{error}}
@@ -34,7 +34,7 @@
                 </div>
                 <div class="mb-3">
                     {{form.phone_number.label(for="phone", class="form-label")}}
-                    {{form.phone_number(type="tel", class="form-control", id="phone")}}
+                    {{form.phone_number(type="tel", class="form-control", id="phone", value=current_user.phone_number)}}
                     {% for error in form.phone_number.errors %}
                     <div role="alert" class="alert alert-danger">
                         {{error}}

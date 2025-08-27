@@ -8,6 +8,7 @@
     <meta name="author" content="Yandex Lyceum Project team">
     <meta name="description" content="Site for caffe">
     <meta name="keywords" content="restaurant, caffe, Krasnodar, delicious, вкусно, ресторан, кафе, Краснодар">
+     <link rel="icon" href="{{url_for('static', filename='img/icons/favicon.ico')}}" type="image/x-icon">
     <title>{{title}}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
@@ -21,7 +22,7 @@
 
 </head>
 <body>
-{% include "desktop/fragments/_header.html" %}
+{% include "fragments/_header.html" %}
 <main style="background-color: #f8f9fa; margin-top: 65px">
     {% block content %}
     {% endblock %}

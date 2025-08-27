@@ -21,7 +21,6 @@ class ListUsers(BaseResourceList):
             return jsonify({'error': 'Invalid phone number'})
         if any(not args[value].isalpha() for value in ('name', 'surname', 'sex')):
             return jsonify({'error': 'Name, surname and sex must be strings'})
-        return None
 
     @staticmethod
     def refactor_args(args: Namespace) -> tuple[Namespace, list]:

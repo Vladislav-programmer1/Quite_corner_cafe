@@ -44,7 +44,7 @@ class ApiManager:
 
     async def post(self, table: str, data: dict) -> bool:
         try:
-            async with ClientSession(timeout=ClientTimeout(total=2)) as session:
+            async with ClientSession(timeout=ClientTimeout(total=5)) as session:
                 async with session.post(f'http://{getenv("server")}:{getenv("port")}/api/v2/{table}',
                                         json=data) as response:
                     match response.status:

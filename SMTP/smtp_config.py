@@ -1,5 +1,6 @@
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.utils import make_msgid
 from os import getenv
 from smtplib import SMTP_SSL
 
@@ -22,9 +23,10 @@ def send_email(to: str, subject: str, text: str) -> bool:
     msg['From'] = addr_from
     msg['To'] = to
     msg['Subject'] = subject
-    msg['Content-Type'] = 'text/plai'
+    msg['Content-Type'] = 'text/plain'
     msg['MIME-Version'] = '1.0'
     msg['charset'] = 'utf-8'
+    msg['Message-Id'] = make_msgid()
     # set params to the message
     try:
         msg.attach(MIMEText(text, 'plain'))  # add text
